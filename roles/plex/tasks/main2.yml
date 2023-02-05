@@ -61,7 +61,7 @@
 - name: Post-Install Tasks
   ansible.builtin.import_tasks: "subtasks/post-install/main.yml"
 
-- name: "Execute Plex Extra Tasks role"
-  ansible.builtin.include_role:
-    name: "plex_extra_tasks"
-  when: (plex_plugin_sub_zero or plex_plugin_webtools) and (not continuous_integration)
+#- name: "Execute Plex Extra Tasks role"
+#  ansible.builtin.include_role:
+#    name: "plex_extra_tasks"
+#  when: (plex_plugin_sub_zero or plex_plugin_webtools) and (not continuous_integration)

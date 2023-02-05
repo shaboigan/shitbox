@@ -41,12 +41,12 @@
       ignore_errors: true
       changed_when: false
 
-#    - name: Compare installed Sub-Zero Plugin version with latest one
-#      ansible.builtin.set_fact:
-#        plex_plugin_subzero_is_outdated: "{{
-#            (plex_plugin_subzero_latest_version is failed) or
-#              ((plex_plugin_subzero_latest_version is success) and
-#              (plex_plugin_subzero_previously_installed_version is version(plex_plugin_subzero_latest_version.stdout, '<'))) }}"
+    - name: Compare installed Sub-Zero Plugin version with latest one
+      ansible.builtin.set_fact:
+        plex_plugin_subzero_is_outdated: "{{
+            (plex_plugin_subzero_latest_version is failed) or
+              ((plex_plugin_subzero_latest_version is success) and
+              (plex_plugin_subzero_previously_installed_version is version(plex_plugin_subzero_latest_version.stdout, '<'))) }}"
 
   when: plex_plugin_subzero_bundle_status.stat.exists
 
