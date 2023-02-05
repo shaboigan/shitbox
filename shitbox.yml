@@ -61,6 +61,7 @@
     - { role: python, tags: ['python'] }
     - { role: qbittorrent, tags: ['qbittorrent'] }
     - { role: readarr, tags: ['readarr'] }
+    - { role: redis, tags: ['redis'] }    
     - { role: sabnzbd, tags: ['sabnzbd'] }
     - { role: subliminal, tags: ['subliminal'] }
     - { role: traktarr, tags: ['traktarr'] }
