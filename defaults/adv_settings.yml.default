@@ -28,3 +28,9 @@ mounts:
 gpu:
   intel: yes
   nvidia: no
+vpn:
+  enable: no
+  port: 
+  config: 
+overseer:
+  subdomain: 
