@@ -7,22 +7,54 @@
 #                   GNU General Public License v3.0                     #
 #########################################################################
 ---
-- name: Pre-Install | Get next available port within the range of '56881-56901' # noqa fqcn[action]
-  find_next_open_port:
-    low_bound: 56881
-    high_bound: 56901
-  register: port_lookup_56881
-  ignore_errors: true
+- name: Pre-Install | VPN Tasks
+  block:
 
-- name: Pre-Install | Settings | Update 'qBittorrent.conf' config settings
-  community.general.ini_file:
-    path: "{{ qbittorrent_paths_conf }}"
-    section: BitTorrent
-    option: Session\Port
-    value: "{{ qbittorrent_docker_ports_56881 }}"
-    no_extra_spaces: true
-    state: present
-    owner: "{{ user.name }}"
-    group: "{{ user.name }}"
-    mode: "0775"
-  when: qbittorrent_paths_conf_stat.stat.exists
+  - name: Pre-Install | Check if opvn config file exists
+    stat:
+      path: {{ qbittorrent_paths_location }}/openvpn/config.ovpn"
+    register: config_ovpn
+
+  - name: Pre-Install | Import 'openvpn config'
+    shell: "curl -Lo /opt/qbittorrent/openvpn/config.ovpn '{{ vpn.config }}'"
+    become: yes
+    become_user: "{{ user.name }}"
+    when: not config_ovpn.stat.exists
+
+  - name: Pre-Install | Settings | Update 'qBittorrent.conf' config settings
+    community.general.ini_file:
+      path: "{{ qbittorrent_paths_conf }}"
+      section: BitTorrent
+      option: Session\Port
+      value: "{{ qbittorrent_docker_ports }}"
+      no_extra_spaces: true
+      state: present
+      owner: "{{ user.name }}"
+      group: "{{ user.name }}"
+      mode: "0775"
+    when: qbittorrent_paths_conf_stat.stat.exists
+
+  when: (vpn.enable|default(false,true))
+
+- name: Pre-Install | Non VPN Tasks
+  block:
+
+  - name: Pre-Install | Get next available port within the range of '56881-56901' # noqa fqcn[action]
+    find_next_open_port:
+      low_bound: 56881
+      high_bound: 56901
+    register: port_lookup_56881
+    ignore_errors: true
+
+  - name: Pre-Install | Settings | Update 'qBittorrent.conf' config settings
+    community.general.ini_file:
+      path: "{{ qbittorrent_paths_conf }}"
+      section: BitTorrent
+      option: Session\Port
+      value: "{{ qbittorrent_docker_ports }}"
+      no_extra_spaces: true
+      state: present
+      owner: "{{ user.name }}"
+      group: "{{ user.name }}"
+      mode: "0775"
+  when: qbittorrent_paths_conf_stat.stat.exists and not config_ovpn.stat.exists
