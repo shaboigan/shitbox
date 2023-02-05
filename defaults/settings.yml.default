@@ -3,7 +3,7 @@ downloads: /mnt/unionfs/downloads
 transcodes: /mnt/local/transcodes
 rclone:
   version: latest
-  remote: google
+  remote: cloud-crypt
 shell: bash
 authelia:
   master: yes

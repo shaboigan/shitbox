@@ -24,7 +24,6 @@
     - { role: rclone, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'preinstall', 'rclone'] }
     - { role: system, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'system'] }
     - { role: common, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'common'] }
-    - { role: motd, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'motd'] }
     - { role: docker, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'docker'] }
     - { role: remote, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'mounts', 'mounts_override'], when: ['use_remote'] }
     - { role: unionfs, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'mounts', 'mounts_override'] }
