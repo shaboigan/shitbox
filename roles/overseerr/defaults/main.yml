@@ -28,18 +28,18 @@ overseerr_paths_folders_list:
 # Web
 ################################
 
-overseerr_web_subdomain: "{{ overseerr_name }}"
+overseerr_web_subdomain: "{{ overseerr.subdomain }}"
 overseerr_web_domain: "{{ user.domain }}"
 overseerr_web_port: "5055"
-overseerr_web_url: "{{ 'https://' + lookup('vars', overseerr_name + '_web_subdomain', default=overseerr_web_subdomain)
-                       + '.' + lookup('vars', overseerr_name + '_web_domain', default=overseerr_web_domain) }}"
+overseerr_web_url: "{{ 'https://' + lookup('vars', overseerr.subdomain + '_web_subdomain', default=overseerr_web_subdomain)
+                       + '.' + lookup('vars', overseerr.subdomain + '_web_domain', default=overseerr_web_domain) }}"
 
 ################################
 # DNS
 ################################
 
-overseerr_dns_record: "{{ lookup('vars', overseerr_name + '_web_subdomain', default=overseerr_web_subdomain) }}"
-overseerr_dns_zone: "{{ lookup('vars', overseerr_name + '_web_domain', default=overseerr_web_domain) }}"
+overseerr_dns_record: "{{ lookup('vars', overseerr.subdomain + '_web_subdomain', default=overseerr_web_subdomain) }}"
+overseerr_dns_zone: "{{ lookup('vars', overseerr.subdomain + '_web_domain', default=overseerr_web_domain) }}"
 overseerr_dns_proxy: "{{ dns.proxied }}"
 
 ################################
