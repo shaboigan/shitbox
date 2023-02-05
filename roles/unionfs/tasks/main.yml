@@ -1,0 +1,45 @@
+#########################################################################
+# Title:         Shitbox: UnionFS Role                                  #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+# Variables
+
+- name: Variables Task
+  ansible.builtin.import_tasks: "subtasks/variables.yml"
+
+# Stop Docker Containers
+
+- name: Docker Containers Stop Tasks
+  ansible.builtin.import_tasks: "subtasks/docker/containers_stop.yml"
+  when: not (('mounts' in ansible_run_tags) or ('mounts_override' in ansible_run_tags))
+
+# Existing Setup
+
+- name: Service Tasks
+  ansible.builtin.include_tasks: "subtasks/services.yml"
+  vars:
+    _service_file: "{{ item }}"
+  loop: "{{ service_files }}"
+
+# New Setup
+
+- name: Basic Tasks
+  ansible.builtin.import_tasks: "subtasks/basics.yml"
+
+# Mount UnionFS
+
+- name: Mount UnionFS Tasks
+  ansible.builtin.include_tasks: "subtasks/mergerfs.yml"
+
+- name: Docker Daemon Tasks
+  ansible.builtin.import_tasks: "subtasks/docker/daemon.yml"
+
+# Start Docker Containers
+
+- name: Docker Containers Start Tasks
+  ansible.builtin.import_tasks: "subtasks/docker/containers_start.yml"

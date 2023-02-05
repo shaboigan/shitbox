@@ -1,0 +1,41 @@
+#########################################################################
+# Title:         Shitbox: yyq Role                                      #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Install common packages
+  ansible.builtin.apt:
+    state: present
+    name:
+      - curl
+      - jq
+
+- name: Install yyq
+  ansible.builtin.get_url:
+    url: "https://github.com/mikefarah/yq/releases/download/v{{ yyq_install_version }}/yq_linux_amd64"
+    dest: /usr/local/bin/yyq
+    mode: "0775"
+    owner: root
+    group: root
+    force: true
+    validate_certs: false
+  ignore_errors: true
+  register: x
+  until: "x is not failed"
+  retries: 5
+  delay: 10
+
+- name: "Get yyq version"
+  ansible.builtin.shell: "/usr/local/bin/yyq --version | head -n 1 | grep -oP '(?<=version )[^ ]*'"
+  register: yyq_version
+  ignore_errors: true
+  when: (x is success)
+
+- name: "Display yyq version"
+  ansible.builtin.debug:
+    msg: "yyq {{ yyq_version.stdout }} installed."
+  when: (x is success)

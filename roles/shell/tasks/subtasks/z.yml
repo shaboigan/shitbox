@@ -1,0 +1,34 @@
+#########################################################################
+# Title:         Shitbox: Shell | z (jump around)                       #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: z | Create 'z' directories
+  ansible.builtin.file:
+    path: "{{ shell_z_git_repo_dest }}"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    recurse: true
+
+- name: z | Clone 'z' repo
+  ansible.builtin.git:
+    repo: "{{ shell_z_git_repo_url }}"
+    dest: "{{ shell_z_git_repo_dest }}"
+    clone: true
+    version: HEAD
+    force: true
+  become: true
+  become_user: "{{ user.name }}"
+  register: shell_z_git_clone_status
+  ignore_errors: true
+
+- name: z | 'z' Installed
+  ansible.builtin.debug:
+    msg: "'z (jump around)' Installed"
+  when: (shell_z_git_clone_status is succeeded)

@@ -1,0 +1,43 @@
+#########################################################################
+# Title:         Shitbox: Resources | Tasks | Instances | Get Info      #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Resources | Tasks | Instances | Get Info | Run Sonarr Tasks
+  ansible.builtin.include_tasks: sonarr.yml
+  vars:
+    sonarr_name: "{{ item }}"
+  with_items: "{{ sonarr_instances }}"
+  when: "'sonarr' in get_info_list"
+
+- name: Resources | Tasks | Instances | Get Info | Run Radarr Tasks
+  ansible.builtin.include_tasks: radarr.yml
+  vars:
+    radarr_name: "{{ item }}"
+  with_items: "{{ radarr_instances }}"
+  when: "'radarr' in get_info_list"
+
+- name: Resources | Tasks | Instances | Get Info | Run Lidarr Tasks
+  ansible.builtin.include_tasks: lidarr.yml
+  vars:
+    lidarr_name: "{{ item }}"
+  with_items: "{{ lidarr_instances }}"
+  when: "'lidarr' in get_info_list"
+
+- name: Resources | Tasks | Instances | Get Info | Run Readarr Tasks
+  ansible.builtin.include_tasks: readarr.yml
+  vars:
+    readarr_name: "{{ item }}"
+  with_items: "{{ readarr_instances }}"
+  when: "'readarr' in get_info_list"
+
+- name: Resources | Tasks | Instances | Get Info | Run Plex Tasks
+  ansible.builtin.include_tasks: plex.yml
+  vars:
+    plex_name: "{{ item }}"
+  with_items: "{{ plex_instances }}"
+  when: "'plex' in get_info_list"

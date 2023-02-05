@@ -1,0 +1,8 @@
+[defaults]
+inventory = ./inventories/local
+roles_path = roles:resources/roles
+log_path = ./shitbox.log
+callbacks_enabled = profile_tasks
+interpreter_python = /srv/ansible/venv/bin/python3
+remote_tmp = /tmp/ansible
+force_color = True

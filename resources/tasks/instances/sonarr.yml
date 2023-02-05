@@ -1,0 +1,34 @@
+###########################################################################
+# Title:         Shitbox: Resources | Tasks | Instances | Get Sonarr Info #
+# Author(s):     salty                                                    #
+# URL:           https://github.com/shaboigan/Shitbox                      #
+# --                                                                      #
+###########################################################################
+#                   GNU General Public License v3.0                       #
+###########################################################################
+---
+- name: Resources | Tasks | Instances | Get Info | Check if Sonarr exists
+  ansible.builtin.stat:
+    path: "{{ sonarr_paths_config_location }}"
+  register: sonarr_paths_config_location_stat
+
+- name: Resources | Tasks | Instances | Get Info | Sonarr API Key tasks
+  block:
+
+    - name: Resources | Tasks | Instances | Get Info | Fetch Sonarr API Key
+      community.general.xml:
+        path: "{{ sonarr_paths_config_location }}"
+        xpath: /Config/ApiKey
+        content: text
+      register: xmlresp
+
+    - name: Resources | Tasks | Instances | Get Info | Set 'sonarr_info' variable
+      ansible.builtin.set_fact:
+        sonarr_info: "{{ sonarr_info | default({}) | combine({sonarr_name: {'name': sonarr_name, 'url': sonarr_web_url, 'api_key': xmlresp.matches[0].ApiKey}}) }}"
+
+  when: (sonarr_paths_config_location_stat.stat.exists)
+
+- name: Resources | Tasks | Instances | Get Info | Set 'sonarr_info' variable
+  ansible.builtin.set_fact:
+    sonarr_info: "{{ sonarr_info | default({}) | combine({sonarr_name: {'name': sonarr_name, 'url': sonarr_web_url, 'api_key': 'not installed'}}) }}"
+  when: (not sonarr_paths_config_location_stat.stat.exists)

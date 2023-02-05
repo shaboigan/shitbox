@@ -1,0 +1,47 @@
+#########################################################################
+# Title:         Shitbox: System Role                                   #
+# Author(s):     l3uddz, desimaniac, EnorMOZ                            #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Logrotate
+  ansible.builtin.import_tasks: "subtasks/logrotate.yml"
+
+- name: APT tasks
+  ansible.builtin.include_tasks: "subtasks/apt.yml"
+
+- name: Network tasks
+  ansible.builtin.import_tasks: "subtasks/network.yml"
+
+- name: sysctl tasks
+  ansible.builtin.include_tasks: "subtasks/sysctl.yml"
+  when: run_sysctl_tasks
+
+- name: pam_limits tasks
+  ansible.builtin.include_tasks: "subtasks/pam_limits.yml"
+
+- name: Mounts tasks
+  ansible.builtin.import_tasks: "subtasks/mounts.yml"
+
+- name: CPU Frequency tasks
+  ansible.builtin.include_tasks: "subtasks/cpufrequency.yml"
+  when: cpu_performance_mode
+
+- name: Remove CPU Power task
+  ansible.builtin.include_tasks: "subtasks/remove_cpupower.yml"
+  when: cpu_performance_mode
+
+- name: Set Time Zone task
+  ansible.builtin.import_tasks: "subtasks/timezone.yml"
+  when: (tz is defined)
+  tags: set-timezone
+
+- name: Set Locale task
+  ansible.builtin.import_tasks: "subtasks/locale.yml"
+  tags: set-locale
+
+- name: flush_handlers
+  ansible.builtin.meta: flush_handlers

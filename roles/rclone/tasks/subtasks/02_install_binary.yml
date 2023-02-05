@@ -1,0 +1,105 @@
+#########################################################################
+# Title:         Shitbox: Rclone - Install Binary Tasks                 #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Install Binary | Install common packages
+  ansible.builtin.apt:
+    state: present
+    name:
+      - unzip
+      - man-db
+
+- name: Install Binary | Create rclone directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: 0775
+    recurse: true
+  with_items:
+    - "/home/{{ user.name }}/.config"
+    - "/home/{{ user.name }}/.config/rclone"
+
+- name: Install Binary | Cleanup rclone tmp path # noqa deprecated-command-syntax
+  ansible.builtin.shell: rm -rf /tmp/rclone-*-linux-amd64
+  ignore_errors: true
+
+- name: Install Binary | Display rclone version being installed
+  ansible.builtin.debug:
+    msg: "Installing Rclone version: {{ rclone_version_specified }}"
+  when: rclone_version_is_specified
+
+- name: "Install Binary | Download and unarchive rclone"
+  block:
+
+    - name: "Install Binary | Download and unarchive rclone"
+      ansible.builtin.unarchive:
+        src: "{{ rclone_download_url }}"
+        dest: /tmp
+        copy: false
+        validate_certs: false
+      register: x
+      until: "x is not failed"
+      retries: 5
+      delay: 10
+
+  rescue:
+
+    - name: "Install Binary | Download and unarchive rclone from Github"
+      ansible.builtin.unarchive:
+        src: "{{ rclone_latest_download_url.stdout }}"
+        dest: /tmp
+        copy: false
+        validate_certs: false
+      register: x
+      until: "x is not failed"
+      retries: 5
+      delay: 10
+
+- name: Install Binary | Find rclone tmp dir
+  ansible.builtin.shell: ls -d /tmp/rclone-*-linux-amd64
+  register: rclone_tmp_dir
+
+- name: Install Binary | Copy binary to /usr/bin/rclone
+  ansible.builtin.copy:
+    src: "{{ rclone_tmp_dir.stdout }}/rclone"
+    dest: "/usr/bin/rclone"
+    mode: "0775"
+    owner: root
+    group: root
+    force: true
+
+- name: Install Binary | Make dir for local manpages
+  ansible.builtin.file:
+    path: '/usr/local/share/man/man1'
+    state: directory
+    mode: "0775"
+    owner: root
+    group: root
+
+- name: Install Binary | Copy manpage
+  ansible.builtin.copy:
+    src: "{{ rclone_tmp_dir.stdout }}/rclone.1"
+    dest: /usr/local/share/man/man1/rclone.1
+    mode: "0664"
+    owner: root
+    group: root
+
+- name: Install Binary | Install manpage
+  ansible.builtin.shell: mandb
+  changed_when: false
+
+- name: Install Binary | Get rclone version
+  ansible.builtin.shell: rclone --version | head -n 1 | awk '{ print substr($2, 2) }'
+  register: rclone_version
+  ignore_errors: true
+
+- name: "Install Binary | Display rclone version"
+  ansible.builtin.debug:
+    msg: "Rclone version {{ rclone_version.stdout }} installed."

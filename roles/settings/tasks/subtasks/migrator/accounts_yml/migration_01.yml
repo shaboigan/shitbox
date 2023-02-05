@@ -1,0 +1,20 @@
+########################################################################################
+# Title:         Shitbox: Settings | Migrator | 'accounts.yml' | Migration 01          #
+# Author(s):     desimaniac                                                            #
+# URL:           https://github.com/shaboigan/Shitbox                                   #
+# --                                                                                   #
+########################################################################################
+#                            GNU General Public License v3.0                           #
+########################################################################################
+---
+- name: Migrator | 'accounts.yml' | Migration 01 | Remove 'null' values
+  ansible.builtin.replace:
+    path: "{{ playbook_dir }}/{{ file }}"
+    regexp: '(?<=: )\bnull\s*$'
+    replace: ''
+    owner: "{{ shitbox_yml.stat.uid }}"
+    group: "{{ shitbox_yml.stat.gid }}"
+    mode: 0664
+
+- name: Migrator | 'accounts.yml' | Migration 01 | Re-import Variables
+  ansible.builtin.include_vars: "{{ playbook_dir }}/{{ file }}"

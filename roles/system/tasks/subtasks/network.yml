@@ -1,0 +1,64 @@
+#########################################################################
+# Title:         Shitbox: System | Network Tasks                        #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Network | Install common packages
+  ansible.builtin.apt:
+    state: present
+    name:
+      - vnstat
+      - pciutils
+      - ethtool
+
+- name: Network | Network Tasks Block
+  block:
+
+    - name: Network | Check for '/etc/vnstat.conf'
+      ansible.builtin.stat:
+        path: "/etc/vnstat.conf"
+      register: vnstat_conf
+
+    - name: Network | Set vnstat to proper default interface
+      ansible.builtin.lineinfile:
+        path: "/etc/vnstat.conf"
+        regexp: '(Interface)\s?.*'
+        line: '\1 "{{ ansible_default_ipv4.interface }}"'
+        state: present
+        backrefs: true
+      when: (vnstat_conf.stat.exists)
+
+    - name: Network | Import 'rc.local' if missing
+      ansible.builtin.copy:
+        src: "etc/rc.local"
+        dest: "/etc/rc.local"
+        owner: "root"
+        group: "root"
+        mode: "0755"
+        force: false
+
+    - name: Network | Get NIC Info
+      ansible.builtin.shell: lspci
+      register: nic
+
+    - name: Network | Disable TSO / TX
+      ansible.builtin.blockinfile:
+        path: "/etc/rc.local"
+        state: present
+        create: false
+        marker: "### {mark} SHITBOX MANAGED BLOCK ###"
+        block: |
+          /sbin/ifconfig {{ ansible_default_ipv4.interface }} txqueuelen 10000
+          ethtool -G {{ ansible_default_ipv4.interface }} rx 4096 tx 4096
+          ethtool -K {{ ansible_default_ipv4.interface }} tso off tx off
+        insertbefore: "^exit 0"
+        owner: "root"
+        group: "root"
+        mode: "0755"
+      when: ('I218' in nic.stdout) or ('I219' in nic.stdout)
+
+  when: (ansible_default_ipv4 is defined) and (ansible_default_ipv4.type == "ether")

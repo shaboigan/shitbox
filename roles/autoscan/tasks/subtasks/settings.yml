@@ -1,0 +1,26 @@
+#########################################################################
+# Title:            Shitbox: Autoscan                                   #
+# Author(s):        salty, TABLE                                        #
+# URL:              https://github.com/shaboigan/Shitbox                 #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Settings | Check if `{{ autoscan_paths_config_location | basename }}` exists
+  ansible.builtin.stat:
+    path: "{{ autoscan_paths_config_location }}"
+  register: autoscan_config
+
+- name: Settings | New `{{ autoscan_paths_config_location | basename }}` tasks
+  block:
+
+    - name: Settings | Import default `{{ autoscan_paths_config_location | basename }}`
+      ansible.builtin.template:
+        src: config.yml.j2
+        dest: "{{ autoscan_paths_config_location }}"
+        owner: "{{ user.name }}"
+        group: "{{ user.name }}"
+        mode: 0775
+
+  when: (not autoscan_config.stat.exists)

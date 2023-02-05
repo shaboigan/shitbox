@@ -1,0 +1,22 @@
+# /etc/systemd/system/mergerfs.service
+#########################################################################
+# Title:         Shitbox: MergerFS Mount                                #
+# Author(s):     EnorMOZ, desimaniac                                    #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+
+[Unit]
+Description=MergerFS Mount
+After={{ mergerfs_mount_service_after }}
+
+[Service]
+Type=forking
+GuessMainPID=no
+ExecStart={{ mergerfs_mount_start_command }}
+ExecStop={{ mergerfs_mount_stop_command }}
+
+[Install]
+WantedBy=default.target

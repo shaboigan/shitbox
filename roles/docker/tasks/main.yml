@@ -1,0 +1,105 @@
+#########################################################################
+# Title:         Shitbox: Docker Role                                   #
+# Author(s):     l3uddz, desimaniac, EnorMOZ                            #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Check filesystem of '/var/lib/' path
+  ansible.builtin.shell: stat -f -c %T /var/lib/
+  register: var_lib_file_system
+  changed_when: false
+
+- name: Check to see if docker is installed
+  ansible.builtin.stat:
+    path: "/usr/bin/docker"
+  register: docker_binary
+
+- name: Populate Service Facts
+  ansible.builtin.service_facts:
+  when: docker_binary.stat.exists
+
+- name: Get Docker service state
+  ansible.builtin.set_fact:
+    docker_service_running: "{{ (services['docker.service'] is defined) and (services['docker.service']['state'] == 'running') }}"
+  when: docker_binary.stat.exists
+
+- name: Tasks for when Docker exists and is running
+  block:
+
+    - name: Gather list of running Docker containers
+      ansible.builtin.shell: "docker ps --format '{{ '{{' }} .Names{{ '}}' }}' | sort | xargs echo -n"
+      register: docker_running_containers
+      ignore_errors: true
+      changed_when: false
+
+    - name: Stop all running Docker containers
+      ansible.builtin.shell: "docker stop {{ docker_running_containers.stdout }} &> /dev/null || true"
+      ignore_errors: true
+      when: (docker_running_containers.stdout | trim | length > 0)
+
+    - name: Import BTRFS Cleanup Tasks
+      ansible.builtin.include_tasks: "subtasks/btrfs/cleanup.yml"
+      when: ('btrfs' in var_lib_file_system.stdout)
+
+    - name: Stop docker service
+      ansible.builtin.systemd:
+        name: docker
+        state: stopped
+
+  when: docker_binary.stat.exists and docker_service_running
+
+- name: "Import Daemon Tasks"
+  ansible.builtin.import_tasks: "subtasks/daemon.yml"
+
+- name: "Import Docker Binary tasks"
+  ansible.builtin.include_tasks: "subtasks/binary/binary.yml"
+
+- name: Import BTRFS Psuedo-File-System Tasks
+  ansible.builtin.include_tasks: "subtasks/btrfs/pseudo_file_system.yml"
+  when: ('btrfs' in var_lib_file_system.stdout)
+
+- name: Start docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Wait for 60 seconds before commencing
+  ansible.builtin.wait_for:
+    timeout: "{{ docker_containers_startup_delay }}"
+  when: (not continuous_integration)
+
+- name: "Stop all Docker containers"
+  ansible.builtin.shell: docker stop $(docker ps -aq) &> /dev/null || true
+
+- name: "Import Docker Network tasks"
+  ansible.builtin.import_tasks: "subtasks/network.yml"
+
+- name: "Import Docker Housekeeping tasks"
+  ansible.builtin.import_tasks: "subtasks/housekeeping.yml"
+  tags: docker-housekeeping
+
+- name: "Re-start all previously running Docker containers"
+  ansible.builtin.shell: 'docker start {{ docker_running_containers.stdout }}'
+  when: docker_binary.stat.exists and docker_service_running and (docker_running_containers.stdout | trim | length > 0)
+  ignore_errors: true
+
+- name: "Import Docker Hub tasks"
+  ansible.builtin.import_tasks: "subtasks/dockerhub.yml"
+  when: dockerhub_is_enabled
+
+- name: "Import DNS tasks"
+  ansible.builtin.import_tasks: "subtasks/dns.yml"
+
+- name: "Import Compose tasks"
+  ansible.builtin.import_tasks: "subtasks/compose.yml"
+  tags: docker-compose
+
+- name: "Install ctop"
+  ansible.builtin.include_role:
+    name: ctop
+  tags: ctop

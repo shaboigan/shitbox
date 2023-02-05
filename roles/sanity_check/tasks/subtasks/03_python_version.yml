@@ -1,0 +1,12 @@
+#########################################################################
+# Title:         Shitbox: Sanity Check | Python Version                 #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Python Version | Print Python version
+  ansible.builtin.debug:
+    msg: "Ansible running on Python version: {{ ansible_python_version }}"

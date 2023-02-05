@@ -1,0 +1,36 @@
+#########################################################################
+# Title:         Pre-Tasks: Variables Tasks                             #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Find Shitbox roles
+  ansible.builtin.shell: "find /srv/git/shitbox/roles -type d -name 'defaults'"
+  register: shitbox_roles
+
+- name: Include Shitbox role default vars
+  ansible.builtin.include_vars: "{{ item }}/main.yml"
+  with_items: "{{ shitbox_roles.stdout_lines }}"
+
+- name: Sandbox
+  when: (playbook_dir == "/opt/shitbox_mod")
+  block:
+    - name: Find Sandbox roles
+      ansible.builtin.shell: "find /opt/sandbox/roles -type d -name 'defaults'"
+      register: sandbox_roles
+
+    - name: Include Sandbox role default vars
+      ansible.builtin.include_vars: "{{ item }}/main.yml"
+      with_items: "{{ sandbox_roles.stdout_lines }}"
+
+- name: Check if 'localhost.yml' exists
+  ansible.builtin.stat:
+    path: "/srv/git/shitbox/inventories/host_vars/localhost.yml"
+  register: localhost_inventory_file
+
+- name: Import Inventory variables
+  ansible.builtin.include_vars: "/srv/git/shitbox/inventories/host_vars/localhost.yml"
+  when: localhost_inventory_file.stat.exists

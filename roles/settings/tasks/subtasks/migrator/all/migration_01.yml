@@ -1,0 +1,20 @@
+########################################################################################
+# Title:         Shitbox: Settings | Migrator | All | Migration 01                     #
+# Author(s):     desimaniac, salty                                                     #
+# URL:           https://github.com/shaboigan/Shitbox                                   #
+# --                                                                                   #
+########################################################################################
+#                            GNU General Public License v3.0                           #
+########################################################################################
+---
+- name: Migrator | All | '{{ file }}' | Migration 01 | Add single space after colon (if needed)
+  ansible.builtin.replace:
+    path: "{{ playbook_dir }}/{{ file }}"
+    regexp: '(:)[ \t]*(.*)'
+    replace: '\1 \2'
+    owner: "{{ shitbox_yml.stat.uid }}"
+    group: "{{ shitbox_yml.stat.gid }}"
+    mode: 0664
+
+- name: Migrator | All | '{{ file }}' | Migration 01 | Re-import Variables
+  ansible.builtin.include_vars: "{{ playbook_dir }}/{{ file }}"

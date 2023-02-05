@@ -1,0 +1,46 @@
+##########################################################################
+# Title:         Shitbox: Error Pages Role                               #
+# Author(s):     salty                                                   #
+# URL:           https://github.com/shaboigan/Shitbox                     #
+# --                                                                     #
+##########################################################################
+#                   GNU General Public License v3.0                      #
+##########################################################################
+---
+- name: Check if folder already exists
+  ansible.builtin.stat:
+    path: "/opt/error_pages"
+  register: error_pages_folder
+
+- name: Create directory
+  ansible.builtin.file:
+    path: "/opt/error_pages"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+  when: (not error_pages_folder.stat.exists)
+
+- name: Export error pages from container
+  community.docker.docker_container:
+    name: error_pages-build
+    image: "tarampampam/error-pages"
+    user: "{{ uid }}:{{ gid }}"
+    command: "build --config-file ./error-pages.yml /out"
+    volumes:
+      - "/opt/error_pages:/out:rw"
+    networks:
+      - name: shitbox
+    container_default_behavior: compatibility
+    tls_hostname: localhost
+    auto_remove: yes
+    state: started
+    comparisons:
+      '*': ignore
+  when: (not error_pages_folder.stat.exists)
+
+- name: Remove existing Docker container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/remove_docker_container.yml"
+
+- name: Create Docker container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/create_docker_container.yml"

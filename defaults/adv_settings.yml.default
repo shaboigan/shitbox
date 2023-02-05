@@ -1,0 +1,30 @@
+---
+system:
+  timezone: auto
+docker:
+  json_driver: no
+dns:
+  enabled: yes
+  proxied: no
+  ipv4: yes
+  ipv6: no
+  zerossl: no
+traefik:
+  tls: no
+  http: no
+  metrics: no
+  tracing: no
+  hsts: no
+  provider: cloudflare
+  subdomains:
+    dash: dash
+    metrics: metrics
+    jaeger: jaeger
+  error_pages: no
+mounts:
+  remote: rclone_vfs
+  ipv4_only: no
+  feeder: no
+gpu:
+  intel: yes
+  nvidia: no

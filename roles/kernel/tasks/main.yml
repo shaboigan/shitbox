@@ -1,0 +1,37 @@
+#########################################################################
+# Title:         Shitbox: Kernel Role                                   #
+# Author(s):     desimaniac, l3uddz, salty                              #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Preinstall Task
+  ansible.builtin.include_tasks: "subtasks/01_preinstall.yml"
+  when: ('preinstall' in ansible_run_tags)
+
+- name: Cron Tasks
+  ansible.builtin.include_tasks: "subtasks/02_cron.yml"
+
+# Ubuntu 20.04 HWE Update
+- name: Update Tasks
+  ansible.builtin.include_tasks: "subtasks/03_update_focal.yml"
+  when:
+    - (ansible_distribution == 'Ubuntu')
+    - (ansible_distribution_version is version('20.04', '=='))
+    - (ansible_kernel is version('5.8', '<'))
+
+# Ubuntu 22.04 HWE Update (needs updating when HWE actually runs a newer kernel)
+- name: Update Tasks
+  ansible.builtin.include_tasks: "subtasks/04_update_jammy.yml"
+  when:
+    - (ansible_distribution == 'Ubuntu')
+    - (ansible_distribution_version is version('22.04', '=='))
+    - (ansible_kernel is version('5.15', '<'))
+
+- name: Restart Tasks
+  ansible.builtin.include_tasks: "subtasks/05_restart.yml"
+  when:
+    - reboot_is_necessary
+    - (not continuous_integration)

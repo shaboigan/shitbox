@@ -1,0 +1,89 @@
+# <- processor ->
+
+# Override the minimum age before a scan request is sent to the target (Default 10m):
+minimum-age: 10m
+
+# Override the delay between processed scans (Default 5s):
+scan-delay: 5s
+
+# Set anchor files for remote storage. If these are missing no scans will be sent to the target to avoid files being trashed when a mount fails
+anchors:
+  - /mnt/unionfs/mounted.bin
+
+# <- triggers ->
+
+# Optionally, protect your webhooks with authentication
+authentication:
+  username: {{ user.name }}
+  password: {{ user.pass }}
+
+# Port for Autoscan webhooks to listen on
+port: 3030
+
+triggers:
+  a-train:
+    priority: 5
+    rewrite: # Global rewrites
+      - from: ^/Media/
+        to: /mnt/unionfs/Media/
+
+  inotify:
+    - priority: 0
+
+      # Filter with regular expressions
+      include:
+        - ^/mnt/unionfs/Media/
+      exclude:
+        - '\.(srt|pdf)$'
+
+      # rewrite inotify path to unified filesystem
+      rewrite:
+        - from: ^/mnt/local/Media/
+          to: /mnt/unionfs/Media/
+
+      # Local filesystem paths to monitor
+      paths:
+        - path: /mnt/local/Media
+
+  sonarr:
+{% for instance in sonarr_instances %}
+    - name: {{ instance }} # /triggers/{{ instance }}
+      priority: 2
+      rewrite:
+        - from: /tv/
+          to: /data/TV/
+
+{% endfor %}
+  radarr:
+{% for instance in radarr_instances %}
+    - name: {{ instance }} # /triggers/{{ instance }}
+      priority: 2
+      rewrite:
+        - from: /movies/
+          to: /data/Movies/
+
+{% endfor %}
+  lidarr:
+{% for instance in lidarr_instances %}
+    - name: {{ instance }} # /triggers/{{ instance }}
+      priority: 1
+      rewrite:
+        - from: /music/
+          to: /data/Music/
+
+{% endfor %}
+# <- targets ->
+
+targets:
+{% if plex_account_is_enabled %}
+  plex:
+{% for key,instance in plex_info.items() %}
+    - url: {{ instance.url }} # {{ instance.name }}
+      token: {{ instance.token }}
+      # If backwards compatibility with legacy Cloudbox paths is needed
+      # i.e. /data, then uncomment the below three (3) lines
+      #rewrite:
+        #- from: /mnt/unionfs/Media/
+        #  to: /data/
+{% endfor %}
+{% endif %}

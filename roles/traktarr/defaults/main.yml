@@ -1,0 +1,10 @@
+#########################################################################
+# Title:         Shitbox: Traktarr | Default Variables                  #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+traktarr_instances: ["traktarr"]

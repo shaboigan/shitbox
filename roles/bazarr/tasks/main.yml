@@ -1,0 +1,16 @@
+#########################################################################
+# Title:         Shitbox: Bazarr Role                                   #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Execute Bazarr roles"
+  ansible.builtin.include_tasks: main2.yml
+  vars:
+    bazarr_name: "{{ role }}"
+  with_items: "{{ bazarr_instances }}"
+  loop_control:
+    loop_var: role

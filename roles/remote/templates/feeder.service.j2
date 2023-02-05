@@ -1,0 +1,29 @@
+# /etc/systemd/system/feeder.service
+#########################################################################
+# Title:         Shitbox: Feeder Mount                                  #
+# Location:      /etc/systemd/system/feeder.service                     #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+
+[Unit]
+Description=Feeder Mount
+After=network-online.target
+
+[Service]
+User={{ user.name }}
+Group={{ user.name }}
+Type=notify
+ExecStartPre=/bin/sleep 10
+ExecStart={{ feeder_mount_start_command }}
+ExecStop={{ feeder_mount_stop_command }}
+Restart=on-abort
+RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,72 @@
+#########################################################################
+# Title:         Shitbox: Settings | Start                              #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Start | Install ruamel.yaml"
+  ansible.builtin.pip:
+    name: ruamel.yaml
+    state: "latest"
+
+- name: "Start | Check to see if yyq is installed"
+  ansible.builtin.stat:
+    path: "/usr/local/bin/yyq"
+  register: yyq_binary
+
+- name: "Start | Get yyq version"
+  ansible.builtin.shell: "/usr/local/bin/yyq --version | head -n 1 | grep -oP '(?<=version )[^ ]*'"
+  register: yyq_version_settings_check
+  ignore_errors: true
+  when: yyq_binary.stat.exists
+
+- name: "Start | Set yyq version"
+  ansible.builtin.set_fact:
+    yyq_current_version: "{{ yyq_version_settings_check.stdout
+                          if yyq_version_settings_check.stdout is defined
+                          else '0.0.0' }}"
+
+- name: "Start | Install yyq"
+  ansible.builtin.include_role:
+    name: yyq
+  when: (yyq_current_version is version(yyq_install_version, 'lt', version_type='semver'))
+        or (not yyq_binary.stat.exists)
+
+- name: "Start | Get 'shitbox.yml' info"
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/shitbox.yml"
+  register: shitbox_yml
+
+- name: "Start | Create list of config files"
+  ansible.builtin.set_fact:
+    config_files:
+      - "ansible.cfg"
+      - "accounts.yml"
+      - "settings.yml"
+      - "adv_settings.yml"
+      - "backup_config.yml"
+      - "providers.yml"
+      - "hetzner_nfs.yml"
+
+- name: Start | Initialize vars with empty lists
+  ansible.builtin.set_fact:
+    files_updated_successfully: []
+    files_updated_unsuccessfully: []
+    exit_is_necessary: false
+
+- name: "Start | Check if 'settings-updater.log' exists"
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/settings-updater.log"
+  register: settings_updater_log
+
+- name: "Start | Reset ownership of 'settings-updater.log'"
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/settings-updater.log"
+    state: file
+    owner: "{{ shitbox_yml.stat.uid }}"
+    group: "{{ shitbox_yml.stat.gid }}"
+    mode: 0664
+  when: settings_updater_log.stat.exists

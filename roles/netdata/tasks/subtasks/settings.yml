@@ -1,0 +1,23 @@
+##########################################################################
+# Title:         Shitbox: Netdata | Settings Task                        #
+# Author(s):     desimaniac                                              #
+# URL:           https://github.com/shaboigan/Shitbox                     #
+# --                                                                     #
+##########################################################################
+#                   GNU General Public License v3.0                      #
+##########################################################################
+---
+- name: Settings | Copy Default Config if it doesn't exist
+  ansible.builtin.shell: |
+    docker run -d --name netdata_tmp "{{ netdata_docker_image }}"
+    docker cp netdata_tmp:/etc/netdata/. "{{ netdata_paths_config_location }}"
+    docker rm -f netdata_tmp
+
+- name: Chown directories
+  ansible.builtin.file:
+    path: "{{ netdata_paths_location }}"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    recurse: true

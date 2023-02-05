@@ -1,0 +1,44 @@
+#########################################################################
+# Title:         Shitbox: Remote Role                                   #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+# Variables
+
+- name: Variables Task
+  ansible.builtin.import_tasks: "subtasks/variables.yml"
+
+# Stop Containers
+
+- name: Container Tasks
+  ansible.builtin.import_tasks: "subtasks/containers.yml"
+  when: ('mounts' in ansible_run_tags) or ('mounts_override' in ansible_run_tags)
+
+# Existing Setup
+
+- name: Service Tasks
+  ansible.builtin.include_tasks: "subtasks/services.yml"
+  vars:
+    _service_file: "{{ item }}"
+  loop: "{{ service_files }}"
+
+- name: Mount Path Tasks
+  ansible.builtin.include_tasks: "subtasks/mount_path.yml"
+  vars:
+    mount_path: "{{ item }}"
+  loop: "{{ mount_paths }}"
+
+# New Setup
+
+- name: Basic Tasks
+  ansible.builtin.import_tasks: "subtasks/basics.yml"
+
+# Mount
+
+- name: Mount Tasks
+  ansible.builtin.include_tasks: "subtasks/mounts/{{ item }}.yml"
+  loop: "{{ desired_mount_types }}"

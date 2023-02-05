@@ -1,0 +1,16 @@
+##########################################################################
+# Title:         Shitbox: Plex Auth Token | Default Variables            #
+# Author(s):     desimaniac, salty                                       #
+# URL:           https://github.com/shaboigan/Shitbox                     #
+# --                                                                     #
+##########################################################################
+#                   GNU General Public License v3.0                      #
+##########################################################################
+---
+################################
+# API
+################################
+
+plex_auth_token_version: "1.0.0"
+
+plex_auth_token_product: "SB"

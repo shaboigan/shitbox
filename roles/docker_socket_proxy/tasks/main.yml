@@ -1,0 +1,22 @@
+#########################################################################
+# Title:            Sandbox: docker_socket_proxy                        #
+# Author(s):        salty, JigSawFr                                     #
+# URL:              https://github.com/shaboigan/Sandbox                 #
+# URL:              https://github.com/Tecnativa/docker-socket-proxy    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Remove legacy Docker container
+  community.docker.docker_container:
+    name: "docker-socket-proxy"
+    state: absent
+    container_default_behavior: compatibility
+    tls_hostname: localhost
+
+- name: Remove existing Docker container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/remove_docker_container.yml"
+
+- name: Create Docker container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/create_docker_container.yml"

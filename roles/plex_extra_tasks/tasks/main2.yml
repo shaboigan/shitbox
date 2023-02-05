@@ -1,0 +1,46 @@
+#########################################################################
+# Title:         Shitbox: Plex Extra Tasks Role                         #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Wait for '{{ plex_paths_config_location | basename }}' to be created
+  ansible.builtin.wait_for:
+    path: "{{ plex_paths_config_location }}"
+    state: present
+
+- name: Wait for {{ plex_name | title }} DB to be created
+  ansible.builtin.wait_for:
+    path: "{{ plex_paths_db_location }}"
+    state: present
+
+- name: Wait for {{ plex_name | title }} executable to be created
+  ansible.builtin.shell: docker exec {{ plex_docker_container }} bash -c "ls '/usr/lib/plexmediaserver/Plex Media Server'"
+  register: pms_check
+  until: pms_check.stderr.find("No such file or directory") == -1
+  retries: 600
+  changed_when: false
+  failed_when: pms_check.rc == 1 or pms_check.rc > 2
+
+- name: Stop Docker Container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/stop_docker_container.yml"
+  vars:
+    var_prefix: "plex"
+
+- name: "Install Sub-Zero Plugin"
+  ansible.builtin.include_role:
+    name: sub_zero
+  when: plex_plugin_sub_zero
+
+- name: "Install WebTools Plugin"
+  ansible.builtin.include_role:
+    name: webtools
+  when: plex_plugin_webtools
+
+- name: Start Docker Container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/start_docker_container.yml"
+  vars:
+    var_prefix: "plex"

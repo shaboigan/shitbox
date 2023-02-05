@@ -1,0 +1,26 @@
+#########################################################################
+# Title:         Shitbox: Cloudflare | Purge Cache Task                 #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Purge Cache | Purge Cloudflare Cache for '{{ fld.stdout }}'
+  ansible.builtin.uri:
+    url: 'https://api.cloudflare.com/client/v4/zones/{{ cloudflare_zone }}/purge_cache'
+    method: 'POST'
+    headers:
+      X-Auth-Email: '{{ cloudflare.email }}'
+      X-Auth-Key: '{{ cloudflare.api }}'
+    body_format: json
+    body: { purge_everything: true }
+    status_code: 200
+  register: cf_purge
+
+- name: Purge Cache | Print Result of Cloudflare Cache Purge
+  ansible.builtin.debug:
+    msg: "{{ ((cf_purge.json.success is defined) and (cf_purge.json.success))
+          | ternary('Successfully', 'Unsuccessfully') }}
+          purged Cloudflare cache for '{{ fld.stdout }}'"

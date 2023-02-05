@@ -1,0 +1,74 @@
+#########################################################################
+# Title:         Shitbox: DDClient Role                                 #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# Docker Image:  linuxserver/ddclient                                   #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Stop and remove any existing container
+  community.docker.docker_container:
+    name: ddclient
+    state: absent
+    container_default_behavior: compatibility
+    tls_hostname: localhost
+
+- name: Create ddclient directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+  with_items:
+    - /opt/ddclient
+
+- name: Set subdomains fact
+  ansible.builtin.set_fact:
+    subdomains:
+      - login
+      - dash
+      - plex
+      - autoscan
+      - tautulli
+      - overseerr
+      - sonarr
+      - radarr
+      - lidarr
+
+- name: Import 'ddclient.conf'
+  ansible.builtin.template:
+    src: "ddclient.conf.j2"
+    dest: "/opt/ddclient/ddclient.conf"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: 0775
+    force: false
+  when: cloudflare_is_enabled
+
+- name: Create and start container
+  community.docker.docker_container:
+    name: ddclient
+    image: "lscr.io/linuxserver/ddclient:latest"
+    pull: true
+    env:
+      PUID: "{{ uid }}"
+      PGID: "{{ gid }}"
+    volumes:
+      - "/opt/ddclient:/config"
+    labels:
+      "com.github.shitbox.shitbox_managed": "true"
+    networks:
+      - name: shitbox
+        aliases:
+          - ddclient
+    networks_cli_compatible: true
+    network_mode: "{{ docker_networks_name_common }}"
+    container_default_behavior: compatibility
+    tls_hostname: localhost
+    restart_policy: unless-stopped
+    state: started
+    comparisons:
+      '*': ignore

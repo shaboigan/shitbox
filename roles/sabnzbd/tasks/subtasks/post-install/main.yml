@@ -1,0 +1,16 @@
+#########################################################################
+# Title:         Shitbox: SABnzbd | Post-Install Tasks                  #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Post-Install | Settings Task
+  ansible.builtin.import_tasks: "settings.yml"
+  when: (not sabnzbd_conf_stat.stat.exists)
+
+- name: Post-Install | Web Task
+  ansible.builtin.import_tasks: "web.yml"
+  when: sabnzbd_conf_stat.stat.exists

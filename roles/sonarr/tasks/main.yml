@@ -1,0 +1,16 @@
+#########################################################################
+# Title:         Shitbox: Sonarr Role                                   #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Execute Sonarr roles"
+  ansible.builtin.include_tasks: main2.yml
+  vars:
+    sonarr_name: "{{ role }}"
+  with_items: "{{ sonarr_instances }}"
+  loop_control:
+    loop_var: role

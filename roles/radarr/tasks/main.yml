@@ -1,0 +1,16 @@
+#########################################################################
+# Title:         Shitbox: Radarr Role                                   #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Execute Radarr roles"
+  ansible.builtin.include_tasks: main2.yml
+  vars:
+    radarr_name: "{{ role }}"
+  with_items: "{{ radarr_instances }}"
+  loop_control:
+    loop_var: role

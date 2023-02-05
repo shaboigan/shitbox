@@ -1,0 +1,23 @@
+#########################################################################
+# Title:         Shitbox: Settings | Copy                               #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+# Check for config files and import they are missing
+- name: "Copy | Check if '{{ file }}' exists"
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/{{ file }}"
+  register: file0
+
+- name: "Copy | Copy '{{ file }}.default' to '{{ file }}'"
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/defaults/{{ file }}.default"
+    dest: "{{ playbook_dir }}/{{ file }}"
+    owner: "{{ shitbox_yml.stat.uid }}"
+    group: "{{ shitbox_yml.stat.gid }}"
+    mode: 0664
+  when: (not file0.stat.exists)

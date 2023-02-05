@@ -1,0 +1,23 @@
+##########################################################################
+# Title:         Shitbox: Custom                                         #
+# Author(s):     salty                                                   #
+# URL:           https://github.com/shaboigan/Shitbox                     #
+# --                                                                     #
+##########################################################################
+#                   GNU General Public License v3.0                      #
+##########################################################################
+---
+- name: Install custom apt packages
+  ansible.builtin.apt:
+    state: present
+    name: "{{ item }}"
+  ignore_errors: true
+  loop: "{{ custom_apt }}"
+
+- name: Install custom pip modules
+  ansible.builtin.pip:
+    state: present
+    name: "{{ item }}"
+    executable: pip3
+  ignore_errors: true
+  loop: "{{ custom_pip }}"

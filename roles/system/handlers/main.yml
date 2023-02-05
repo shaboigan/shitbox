@@ -1,0 +1,11 @@
+#########################################################################
+# Title:         Shitbox: System Handler                                #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Handers | Update 'locales'
+  ansible.builtin.command: dpkg-reconfigure --frontend noninteractive locales

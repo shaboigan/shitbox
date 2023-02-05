@@ -1,0 +1,146 @@
+#########################################################################
+# Title:         Shitbox: Scripts Role                                  #
+# Author(s):     l3uddz, desimaniac                                     #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Install common packages
+  ansible.builtin.apt:
+    state: present
+    name:
+      - jq
+      - figlet
+      - toilet
+      - boxes
+      - dnsutils
+
+- name: Create script directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: 0775
+    recurse: true
+  with_items:
+    - /opt/scripts
+    - /opt/scripts/docker
+    - /opt/scripts/frontail
+    - /opt/scripts/nzbget
+    - /opt/scripts/sabnzbd
+    - /opt/scripts/plex
+    - /opt/scripts/plex_autoscan
+    - /opt/scripts/tautulli
+    - /opt/scripts/torrents
+    - /opt/scripts/rclone
+
+- name: Import 'arrpush.py'
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/l3uddz/arrpush/master/arrpush.py"
+    dest: "/opt/scripts/torrents/arrpush.py"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    force: true
+    validate_certs: false
+  register: x
+  until: "x is not failed"
+  retries: 5
+  delay: 10
+  ignore_errors: true
+
+- name: Import 'TorrentCleanup.py'
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/l3uddz/TorrentCleanup/master/TorrentCleanup.py"
+    dest: "/opt/scripts/torrents/TorrentCleanup.py"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    force: true
+    validate_certs: false
+  register: x
+  until: "x is not failed"
+  retries: 5
+  delay: 10
+  ignore_errors: true
+
+- name: Import 'plex_trash_fixer.py'
+  ansible.builtin.get_url:
+    url: "https://raw.githubusercontent.com/l3uddz/plex_trash_fixer/master/plex_trash_fixer.py"
+    dest: "/opt/scripts/plex/plex_trash_fixer.py"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    force: true
+    validate_certs: false
+  register: x
+  until: "x is not failed"
+  retries: 5
+  delay: 10
+  ignore_errors: true
+
+- name: Import 'plex_autoscan_url.sh'
+  ansible.builtin.copy:
+    src: "plex_autoscan_url.sh"
+    dest: "/opt/scripts/plex_autoscan/plex_autoscan_url.sh"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    force: true
+
+- name: Import 'plexsql.sh'
+  ansible.builtin.copy:
+    src: "plexsql.sh"
+    dest: "/opt/scripts/plex/plexsql.sh"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    force: true
+
+- name: Import 'restart_containers.sh'
+  ansible.builtin.copy:
+    src: "restart_containers.sh"
+    dest: "/opt/scripts/docker/restart_containers.sh"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    force: true
+
+- name: Check if 'frontail_custom_preset.json' exists
+  ansible.builtin.stat:
+    path: "/opt/scripts/frontail/frontail_custom_preset.json"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: frontail_preset
+
+- name: Import 'frontail_custom_preset.json'
+  ansible.builtin.copy:
+    src: "frontail_custom_preset.json"
+    dest: "/opt/scripts/frontail/frontail_custom_preset.json"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    force: true
+  when: (not frontail_preset.stat.exists)
+
+- name: Import 'sync_torrents_to_rclone_remote.sh'
+  ansible.builtin.template:
+    src: "sync_torrents_to_rclone_remote.sh.j2"
+    dest: "/opt/scripts/rclone/sync_torrents_to_rclone_remote.sh"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    force: true
+
+- name: Import 'download_torrents_from_rclone_remote.sh'
+  ansible.builtin.template:
+    src: "download_torrents_from_rclone_remote.sh.j2"
+    dest: "/opt/scripts/rclone/download_torrents_from_rclone_remote.sh"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+    force: true

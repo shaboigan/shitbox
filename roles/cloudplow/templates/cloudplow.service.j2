@@ -1,0 +1,28 @@
+# /etc/systemd/system/{{ cloudplow_service_name }}.service
+#########################################################################
+# Title:         Shitbox: Cloudplow Service                             #
+# Author(s):     l3uddz, desimaniac, salty                              #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+
+[Unit]
+Description=Cloudplow
+After=network-online.target
+
+[Service]
+User={{ user.name }}
+Group={{ user.name }}
+Type=simple
+Environment=LC_ALL=C.UTF-8
+Environment=LANG=C.UTF-8
+WorkingDirectory={{ cloudplow_path }}/
+ExecStart={{ cloudplow_python_path }} {{ cloudplow_script_path }} run --loglevel=INFO
+ExecStopPost=/bin/rm -rf {{ cloudplow_path }}/locks
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

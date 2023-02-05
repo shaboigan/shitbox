@@ -1,0 +1,20 @@
+#########################################################################
+# Title:         Shitbox: Media Server Role                             #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Execute Media Server roles"
+  ansible.builtin.include_role:
+    name: "{{ media_server_role }}"
+  with_items: "{{ media_servers_enabled }}"
+  loop_control:
+    loop_var: media_server_role
+
+- name: "Execute Autoscan role"
+  ansible.builtin.include_role:
+    name: "autoscan"
+  when: ('plex' in media_servers_enabled)

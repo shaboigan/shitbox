@@ -1,0 +1,47 @@
+#########################################################################
+# Title:         Shitbox: SABnzbd | Post-Install | Settings Task        #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Post-Install | Settings | Wait for config file to be created
+  ansible.builtin.wait_for:
+    path: "{{ sabnzbd_paths_config_location }}"
+    state: present
+
+- name: Post-Install | Settings | Stop container
+  community.docker.docker_container:
+    name: "{{ sabnzbd_docker_container }}"
+    container_default_behavior: compatibility
+    tls_hostname: localhost
+    state: stopped
+    comparisons:
+      '*': ignore
+
+- name: Post-Install | Settings | Wait for 10 seconds
+  ansible.builtin.wait_for:
+    timeout: 10
+
+- name: Post-Install | Settings | Update config settings
+  community.general.ini_file:
+    path: "{{ sabnzbd_paths_config_location }}"
+    section: misc
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    state: present
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+  loop: "{{ sabnzbd_config_settings_list }}"
+
+- name: Post-Install | Settings | Start container # noqa args[module]
+  community.docker.docker_container:
+    name: "{{ sabnzbd_docker_container }}"
+    container_default_behavior: compatibility
+    tls_hostname: localhost
+    state: "{{ sabnzbd_docker_state }}"
+    comparisons:
+      '*': ignore

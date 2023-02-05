@@ -1,0 +1,18 @@
+#########################################################################
+# Title:         Shitbox: Sanity Check | Ansible Version                #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Find Ansible version
+  ansible.builtin.shell: "{{ shitbox_python }} -c 'from ansible_collections.ansible_release import ansible_version; print(ansible_version)'"
+  register: registered_ansible_version
+
+- name: Print Ansible version
+  ansible.builtin.debug:
+    msg:
+      - "Installed Ansible version: {{ registered_ansible_version.stdout }}."
+      - "Installed Ansible Core version: {{ ansible_version.full }}."

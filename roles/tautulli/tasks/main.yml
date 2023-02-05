@@ -1,0 +1,16 @@
+#########################################################################
+# Title:         Shitbox: Tautulli Role                                 #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Execute Tautulli roles"
+  ansible.builtin.include_tasks: main2.yml
+  vars:
+    tautulli_name: "{{ role }}"
+  with_items: "{{ tautulli_instances }}"
+  loop_control:
+    loop_var: role

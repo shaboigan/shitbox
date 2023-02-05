@@ -1,0 +1,38 @@
+#########################################################################
+# Title:         Shitbox: Docker | DNS Tasks                            #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: DNS | Import 'docker-update-hosts'
+  ansible.builtin.copy:
+    src: docker-update-hosts
+    force: true
+    dest: "/usr/local/bin/docker-update-hosts"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: DNS | Set 'docker-update-hosts' as executable
+  ansible.builtin.file:
+    path: /usr/local/bin/docker-update-hosts
+    owner: "root"
+    group: "root"
+    mode: a+x
+
+- name: DNS | Import 'docker-update-hosts.service'
+  ansible.builtin.template:
+    src: docker-update-hosts.service.j2
+    dest: /etc/systemd/system/docker-update-hosts.service
+    mode: "0755"
+    force: true
+
+- name: DNS | Start 'docker-update-hosts.service'
+  ansible.builtin.systemd:
+    name: docker-update-hosts
+    state: restarted
+    enabled: true
+    daemon_reload: true

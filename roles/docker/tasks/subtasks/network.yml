@@ -1,0 +1,141 @@
+#########################################################################
+# Title:         Shitbox: Docker | Network Tasks                        #
+# Author(s):     desimaniac, l3uddz, salty                              #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Network | Get list of docker networks
+  ansible.builtin.shell: docker network ls --format '{{ '{{' }} .Name{{ '}}' }}'
+  register: docker_networks_list
+  changed_when: false
+
+- name: Network | Get shitbox docker network gateway
+  ansible.builtin.shell: docker network inspect shitbox -f '{{ '{{' }}.EnableIPv6{{ '}}' }}'
+  register: docker_network_ipv6
+  when: ('shitbox' in docker_networks_list.stdout_lines)
+
+- name: "Network | Create new IPv6 shitbox docker network block"
+  block:
+
+    - name: Create shitbox network
+      community.docker.docker_network:
+        name: shitbox
+        state: present
+        enable_ipv6: true
+        ipam_config:
+          - subnet: 172.19.0.0/16
+          - subnet: fd00:dead:beef::/48
+
+  when: ('shitbox' not in docker_networks_list.stdout_lines) and docker_ipv6
+
+- name: "Network | Create new IPv4 shitbox docker network block"
+  block:
+
+    - name: Create shitbox network
+      community.docker.docker_network:
+        name: shitbox
+        state: present
+        ipam_config:
+          - subnet: 172.19.0.0/16
+
+  when: ('shitbox' not in docker_networks_list.stdout_lines) and (not docker_ipv6)
+
+- name: "Network | Migrating existing shitbox docker network block to IPv6"
+  block:
+
+    - name: Network | Get list of containers on shitbox network
+      ansible.builtin.shell: docker ps -a --filter network=shitbox --format '{{ '{{' }}.Names{{ '}}' }}'
+      register: docker_containers
+      changed_when: false
+
+    - name: Network | Disconnect containers from bridge network
+      ansible.builtin.shell: docker network disconnect -f bridge {{ item }}
+      with_items: "{{ docker_containers.stdout_lines }}"
+      register: r
+      failed_when: r.rc > 1
+      ignore_errors: true
+
+    - name: Network | Rebuild shitbox network
+      community.docker.docker_network:
+        name: shitbox
+        state: present
+        enable_ipv6: true
+        ipam_config:
+          - subnet: 172.19.0.0/16
+          - subnet: fd00:dead:beef::/48
+
+    - name: Network | Connect containers to shitbox network
+      ansible.builtin.shell: docker network connect shitbox {{ item }} --alias {{ item }}
+      with_items: "{{ docker_containers.stdout_lines }}"
+      register: q
+      failed_when: q.rc > 1
+      ignore_errors: true
+
+  when: ('shitbox' in docker_networks_list.stdout_lines) and (docker_network_ipv6.stdout == 'false') and docker_ipv6
+
+- name: "Network | Migrating existing shitbox docker network block to IPv4"
+  block:
+
+    - name: Network | Get list of containers on shitbox network
+      ansible.builtin.shell: docker ps -a --filter network=shitbox --format '{{ '{{' }}.Names{{ '}}' }}'
+      register: docker_containers
+      changed_when: false
+
+    - name: Network | Disconnect containers from bridge network
+      ansible.builtin.shell: docker network disconnect -f bridge {{ item }}
+      with_items: "{{ docker_containers.stdout_lines }}"
+      register: r
+      failed_when: r.rc > 1
+      ignore_errors: true
+
+    - name: Network | Rebuild shitbox network
+      community.docker.docker_network:
+        name: shitbox
+        state: present
+        ipam_config:
+          - subnet: 172.19.0.0/16
+
+    - name: Network | Connect containers to shitbox network
+      ansible.builtin.shell: docker network connect shitbox {{ item }} --alias {{ item }}
+      with_items: "{{ docker_containers.stdout_lines }}"
+      register: q
+      failed_when: q.rc > 1
+      ignore_errors: true
+
+  when: ('shitbox' in docker_networks_list.stdout_lines) and (docker_network_ipv6.stdout == 'true') and (not docker_ipv6)
+
+- name: Network | Remove IPv6 NAT Container
+  community.docker.docker_container:
+    name: "ipv6nat"
+    state: absent
+    container_default_behavior: compatibility
+    timeout: 180
+    stop_timeout: 180
+    tls_hostname: localhost
+
+- name: Network | Create IPv6 NAT Container
+  community.docker.docker_container:
+    name: "ipv6nat"
+    image: "robbertkl/ipv6nat"
+    pull: "yes"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/lib/modules:/lib/modules:ro"
+    hostname: "ipv6nat"
+    networks_cli_compatible: true
+    comparisons:
+      '*': ignore
+    network_mode: "host"
+    container_default_behavior: compatibility
+    tls_hostname: localhost
+    restart_policy: "always"
+    privileged: yes
+  when: docker_ipv6
+
+- name: Unset variables
+  ansible.builtin.set_fact:
+    docker_networks_list:
+    docker_containers:

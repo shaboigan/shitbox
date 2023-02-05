@@ -1,0 +1,44 @@
+#########################################################################
+# Title:         Shitbox: ctop Role                                     #
+# Author(s):     l3uddz, desimaniac                                     #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Get latest ctop URL
+  ansible.builtin.shell: "{{ ctop_download_url_lookup_command }}"
+  args:
+    executable: /bin/bash
+  register: ctop_download_url_lookup
+  ignore_errors: true
+
+- name: Install ctop
+  ansible.builtin.get_url:
+    url: "{{ ctop_download_url_lookup.stdout | default(ctop_download_url_backup, true) }}"
+    dest: "{{ ctop_binary_path }}"
+    mode: 0775
+    owner: root
+    group: root
+    force: true
+    validate_certs: false
+  ignore_errors: true
+  register: ctop_download_status
+  until: "ctop_download_status is not failed"
+  retries: 5
+  delay: 10
+
+- name: Tasks to do when ctop download is successful
+  block:
+
+    - name: Get ctop binary version
+      ansible.builtin.shell: "{{ ctop_binary_version_lookup_command }}"
+      register: ctop_binary_version
+      ignore_errors: true
+
+    - name: Display ctop binary version
+      ansible.builtin.debug:
+        msg: "ctop {{ ctop_binary_version.stdout }} installed."
+
+  when: (ctop_download_status is succeeded)

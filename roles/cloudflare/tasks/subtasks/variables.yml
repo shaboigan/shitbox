@@ -1,0 +1,50 @@
+#########################################################################
+# Title:         Shitbox: Cloudflare | Variables Task                   #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Variables | Set 'shitbox_type' variable
+  ansible.builtin.set_fact:
+    shitbox_type: "{{ 'shitbox' if ('shitbox' in ansible_run_tags)
+      else 'mediabox' if ('mediabox' in ansible_run_tags)
+      else 'feederbox' if ('feederbox' in ansible_run_tags)
+      else '' }}"
+
+- name: Get FLD
+  ansible.builtin.shell: |
+    {{ shitbox_python }} -c "from tld import get_tld; res = get_tld(\"http://{{ dns_zone | default(user.domain) }}\", as_object=True); print(res.fld)"
+  register: fld
+
+# https://github.com/advertine/ansible-cloudflare-purge
+
+- name: Variables | Fetch Cloudflare Zones
+  ansible.builtin.uri:
+    url: 'https://api.cloudflare.com/client/v4/zones?name={{ fld.stdout }}'
+    method: 'GET'
+    headers:
+      Content-Type: "application/json"
+      X-Auth-Email: '{{ cloudflare.email }}'
+      X-Auth-Key: '{{ cloudflare.api }}'
+    return_content: true
+  register: cf_zones
+
+- name: Variables | Set 'cloudflare_zone' Variable
+  ansible.builtin.set_fact:
+    cloudflare_zone: "{{ cf_zones.json.result[0].id }}"
+
+- name: Variables | Fetch Cloudflare Page Rules
+  ansible.builtin.shell: |
+    curl -X GET "https://api.cloudflare.com/client/v4/zones/{{ cloudflare_zone }}/pagerules?status=active&order=status&direction=desc&match=all" \
+    -H "X-Auth-Email: {{ cloudflare.email }}" \
+    -H "X-Auth-Key: {{ cloudflare.api }}" \
+    -H "Content-Type: application/json" \
+    | jq -r '.result[] | select(.targets[].constraint.value | contains("{{ fld.stdout }}/.well-known")) | .id'
+  register: cf_page_rules
+
+- name: Variables | Set 'cloudflare_page_rules' Variable
+  ansible.builtin.set_fact:
+    cloudflare_page_rules: "{{ cf_page_rules.stdout_lines }}"

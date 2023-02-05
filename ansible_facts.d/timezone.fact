@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ -z "$TZ" ]
+then
+      TZ=$(timedatectl show --va -p Timezone)
+fi
+
+[ -z "$TZ" ] && TZ="Etc/UTC"
+
+echo "\"$TZ\""

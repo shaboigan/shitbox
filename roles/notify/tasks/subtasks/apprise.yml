@@ -1,0 +1,20 @@
+#########################################################################
+# Title:         Shitbox: Notify | Apprise                              #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Apprise | Install apprise with system pip3
+  ansible.builtin.pip:
+    name: apprise
+    executable: pip3
+    state: "latest"
+
+- name: Apprise | Send Notification
+  ansible.builtin.shell: apprise -b '{{ message }}' '{{ apprise }}'
+  become: true
+  become_user: "{{ user.name }}"
+  ignore_errors: true

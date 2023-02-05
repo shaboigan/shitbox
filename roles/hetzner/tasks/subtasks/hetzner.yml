@@ -1,0 +1,52 @@
+#########################################################################
+# Title:         Shitbox: Hetzner | Hetzner Tasks                       #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Hetzner | Install 'pciutils'
+  ansible.builtin.apt:
+    name: pciutils
+    state: present
+
+- name: Hetzner | Fetch PCI info
+  ansible.builtin.shell: "lspci -v -s $(lspci | grep -E '.*VGA.*Intel.*' | cut -d' ' -f 1) 2>/dev/null || :"
+  register: lscpi_resp
+
+- name: Hetzner | Check if 'blacklist-hetzner.conf' exists
+  ansible.builtin.stat:
+    path: "/etc/modprobe.d/blacklist-hetzner.conf"
+  register: blacklist_hetzner_conf
+
+- name: Hetzner | Hetzner GRUB Edits Block
+  block:
+
+    - name: Hetzner | Comment out 'i915' blacklists in 'blacklist-hetzner.conf'
+      ansible.builtin.replace:
+        path: "/etc/modprobe.d/blacklist-hetzner.conf"
+        regexp: '(^blacklist\si915.*)'
+        replace: '#\1'
+
+    - name: Hetzner | Hetzner GRUB files
+      ansible.builtin.set_fact:
+        hetzner_grub_files:
+          - "/etc/default/grub.d/hetzner.cfg"
+          - "/etc/default/grub"
+
+    - name: Hetzner | Check status of GRUB files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop: "{{ hetzner_grub_files }}"
+      register: hetzner_grub_files_status
+
+    - name: Hetzner | Hetzner GRUB edits
+      ansible.builtin.include_tasks: "grub_edits.yml"
+      when: outer_item.stat.exists
+      loop: "{{ hetzner_grub_files_status.results }}"
+      loop_control:
+        loop_var: outer_item
+
+  when: ('i915' in lscpi_resp.stdout) and blacklist_hetzner_conf.stat.exists

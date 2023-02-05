@@ -1,0 +1,71 @@
+#########################################################################
+# Title:         Shitbox: System | CPU Frequency Tasks                  #
+# Author(s):     l3uddz, EnorMOZ, desimaniac, salty                     #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: CPU Frequency | Install 'cpufrequtils'
+  ansible.builtin.apt:
+    name: cpufrequtils
+    state: present
+
+- name: CPU Frequency | Install 'linux-tools' for Ubuntu
+  ansible.builtin.apt:
+    state: present
+    name:
+      - linux-tools-common
+      - linux-tools-generic
+  when: (ansible_distribution == 'Ubuntu')
+
+- name: "CPU Frequency | Install 'linux-tools-{{ ansible_kernel }}'"
+  ansible.builtin.shell: "apt-get install -qq $(apt-cache search -n linux-tools-{{ ansible_kernel }} | awk '{print $1}' | tail -n 1)"
+  ignore_errors: true
+
+- name: CPU Frequency | Ensure 'cpufrequtils' is enabled
+  community.general.ini_file:
+    path: "/etc/default/cpufrequtils"
+    section: null
+    option: 'ENABLE'
+    value: '"true"'
+    state: present
+    create: true
+    mode: "0644"
+    no_extra_spaces: true
+
+- name: CPU Frequency | Set 'GOVERNOR' used on boot to performance
+  community.general.ini_file:
+    path: "/etc/default/cpufrequtils"
+    section: null
+    option: 'GOVERNOR'
+    value: '"performance"'
+    state: present
+    create: true
+    mode: "0644"
+    no_extra_spaces: true
+
+- name: CPU Frequency | Remove mispelled 'GOVENOR' entry
+  community.general.ini_file:
+    path: "/etc/default/cpufrequtils"
+    section: null
+    option: 'GOVENOR'
+    mode: "0644"
+    state: absent
+
+- name: CPU Frequency | Set 'GOVERNOR' used currently to performance
+  ansible.builtin.shell: 'echo "performance" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor'
+  ignore_errors: true
+
+- name: Populate Service Facts
+  ansible.builtin.service_facts:
+
+- name: Remove ondemand | Stop and disable 'ondemand.service'
+  ansible.builtin.systemd:
+    name: ondemand
+    state: stopped
+    enabled: false
+    daemon_reload: true
+  ignore_errors: true
+  when: ('ondemand.service' in services and services['ondemand.service']['status'] == 'enabled')

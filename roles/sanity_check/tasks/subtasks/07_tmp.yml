@@ -1,0 +1,18 @@
+#########################################################################
+# Title:         Shitbox: Sanity Check | Tmp Folder                     #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Tmp | Create Ansible Temp directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0777
+    owner: "root"
+    group: "root"
+  with_items:
+    - /tmp/ansible

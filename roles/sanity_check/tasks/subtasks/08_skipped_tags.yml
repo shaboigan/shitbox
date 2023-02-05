@@ -1,0 +1,12 @@
+#########################################################################
+# Title:         Shitbox: Sanity Check | Skipped Tags                   #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Skipped Tags | Print Skipped Tags
+  ansible.builtin.debug:
+    msg: "{{ ansible_skip_tags }}"

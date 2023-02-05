@@ -1,0 +1,79 @@
+#########################################################################
+# Title:         Shitbox: System | Logrotate Tasks                      #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+# https://github.com/vbotka/ansible-linux-postinstall
+
+- name: Logrotate | Install required packages
+  ansible.builtin.apt:
+    state: present
+    name:
+      - logrotate
+
+- name: Logrotate | Configure '/etc/logrotate.conf' # noqa args[module]
+  ansible.builtin.lineinfile:
+    path: "/etc/logrotate.conf"
+    line: "{{ item.line }}"
+    state: "{{ item.state }}"
+  loop:
+    - {line: "include /etc/logrotate.d", state: "present"}
+
+- name: Logrotate | Create 'logrotate_d_items' variable
+  ansible.builtin.set_fact:
+    logrotate_d_items:
+      - path: "shitbox"
+        content: |
+          /srv/git/shitbox/shitbox.log {
+              weekly
+              rotate 5
+              size {{ shitbox_max_log_size }}
+              missingok
+              notifempty
+              create 644 {{ user.name }} {{ user.name }}
+          }
+      - path: "sandbox"
+        content: |
+          /opt/sandbox/sandbox.log {
+              weekly
+              rotate 5
+              size {{ shitbox_max_log_size }}
+              missingok
+              notifempty
+              create 644 {{ user.name }} {{ user.name }}
+          }
+      - path: "shitbox_mod"
+        content: |
+          /opt/shitbox_mod/shitbox_mod.log {
+              weekly
+              rotate 5
+              size {{ shitbox_max_log_size }}
+              missingok
+              notifempty
+              create 644 {{ user.name }} {{ user.name }}
+          }
+      - path: "traefik"
+        content: |
+          /opt/traefik/*.log {
+              rotate 5
+              size {{ traefik_max_log_size }}
+              missingok
+              notifempty
+              postrotate
+                docker kill --signal="USR1" traefik
+              endscript
+              create 644 {{ user.name }} {{ user.name }}
+          }
+
+- name: Logrotate | Add items to '/etc/logrotate.d'
+  ansible.builtin.blockinfile:
+    path: "/etc/logrotate.d/{{ item.path }}"
+    marker: "### SHITBOX MANAGED BLOCK - {mark} ###"
+    block: "{{ item.content }}"
+    create: true
+    mode: "0644"
+  loop: "{{ logrotate_d_items }}"

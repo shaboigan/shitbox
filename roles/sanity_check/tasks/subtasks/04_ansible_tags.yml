@@ -1,0 +1,29 @@
+#########################################################################
+# Title:         Shitbox: Sanity Check | Ansible Tags                   #
+# Author(s):     desimaniac, EnorMOZ                                    #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Ansible Tags | Get all available Ansible tags
+  ansible.builtin.shell: "{{ sanity_check_ansible_tags_lookup_command }}"
+  register: available_ansible_tags
+  changed_when: false
+  when: (not continuous_integration)
+        and ('shitbox_mod' not in playbook_dir)
+        and ('sandbox' not in playbook_dir)
+
+- name: Ansible Tags | Ensure valid Ansible tag(s) were provided
+  ansible.builtin.assert:
+    that:
+      - '"{{ item }}" in available_ansible_tags.stdout_lines'
+    msg: >-
+      You must supply valid tag(s)
+      (get a list of valid tags by running 'sb list')
+    quiet: true
+  with_items: "{{ ansible_run_tags }}"
+  when: (not continuous_integration)
+        and ('shitbox_mod' not in playbook_dir)
+        and ('sandbox' not in playbook_dir)

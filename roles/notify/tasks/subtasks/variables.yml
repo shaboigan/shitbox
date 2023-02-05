@@ -1,0 +1,23 @@
+#########################################################################
+# Title:         Shitbox: Notify | Variables                            #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+################################
+# Notification Services List
+################################
+
+- name: Variables | Create empty 'notification_services' list
+  ansible.builtin.set_fact:
+    notification_services: []
+
+- name: Variables | Build 'notification_services' list
+  ansible.builtin.set_fact:
+    notification_services: "{{ notification_services + [item.service] }}"
+  when: item.enabled
+  loop:
+    - { service: 'apprise', enabled: '{{ apprise_account_is_enabled }}' }

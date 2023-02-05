@@ -1,0 +1,25 @@
+##########################################################################
+# Title:         Shitbox: Settings | Default Variables                   #
+# Author(s):     desimaniac, salty                                       #
+# URL:           https://github.com/shaboigan/Shitbox                     #
+# --                                                                     #
+##########################################################################
+#                   GNU General Public License v3.0                      #
+##########################################################################
+---
+run_sysctl_tasks: true
+cpu_performance_mode: true
+
+system_inotify: "524288"
+pam_limit_nofile: "100000"
+fs_file_max: "100000"
+
+timezone: "{{ tz }}"
+timezone_string: "Time zone: {{ tz }}"
+timezone_use_local_rtc: false
+
+system_locale: "en_US.UTF-8"
+system_language: "en_US.UTF-8"
+
+traefik_max_log_size: 10M
+shitbox_max_log_size: 2M

@@ -1,0 +1,129 @@
+#########################################################################
+# Title:         Shitbox: Docker | Default Variables                    #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+################################
+# Docker APT Key
+################################
+
+docker_apt_key_id: 0EBFCD88
+
+docker_apt_key_url: https://download.docker.com/linux/ubuntu/gpg
+
+################################
+# Docker APT Repository
+################################
+
+docker_apt_repo_version: stable
+
+docker_apt_repo_url_old: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ docker_apt_repo_version }}"  # noqa line-length
+
+docker_apt_repo_url: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker.gpg] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} {{ docker_apt_repo_version }}"  # noqa line-length
+
+docker_apt_repo_filename: docker
+
+################################
+# Docker APT Package
+################################
+
+# Version
+
+docker_version: "latest"
+
+# Docker CE
+
+docker_ce_name: "Docker CE"
+
+docker_ce_package: "{{ 'docker-ce' if (docker_version is defined and docker_version | lower == 'latest')
+                    else 'docker-ce=*' + docker_version + '*~' + ansible_distribution | lower + '-' + ansible_distribution_release | lower }}"
+
+docker_ce_filepath: "/usr/bin/dockerd"
+
+docker_ce_dpkg: "docker-ce"
+
+# Docker CE CLI
+
+docker_ce_cli_name: "Docker CE CLI"
+
+docker_ce_cli_package: "{{ 'docker-ce-cli' if (docker_version is defined and docker_version | lower == 'latest')
+                        else 'docker-ce-cli=*' + docker_version + '*~' + ansible_distribution | lower + '-' + ansible_distribution_release | lower }}"
+
+docker_ce_cli_filepath: "/usr/bin/docker"
+
+docker_ce_cli_dpkg: "docker-ce-cli"
+
+# Containerd
+
+containerd_io_name: "Containerd"
+
+containerd_io_package: "containerd.io"
+
+containerd_io_filepath: "/usr/bin/containerd"
+
+containerd_io_dpkg: "containerd.io"
+
+# Misc
+
+docker_package_state: "{{ 'latest' if (docker_version is defined and docker_version | lower == 'latest') else 'present' }}"
+
+put_docker_dpkg_into_hold: true
+
+docker_containers_startup_delay: 60
+
+docker_ipv6: "{{ dns.ipv6 }}"
+
+# Service
+
+docker_service_after: "{{ mount_type }}.service"
+
+docker_service_sleep: 120
+
+docker_daemon_storage_driver: "{{ ('zfs' in var_lib_file_system.stdout) | ternary('zfs', 'overlay2') }}"
+
+fuse_overlayfs_releases_url: "{{ cvm }}https://api.github.com/repos/containers/fuse-overlayfs/releases/latest"
+
+fuse_overlayfs_release_lookup_command: |
+  curl -s {{ fuse_overlayfs_releases_url }} \
+    | jq -r ".assets[] | select(.name | test(\"fuse-overlayfs-x86_64\")) \
+    | .browser_download_url"
+
+################################
+# Docker Compose
+################################
+
+compose_paths_folders_list:
+  - "/usr/local/lib/docker"
+  - "/usr/local/lib/docker/cli-plugins"
+
+compose_github_endpoint: "latest"
+
+compose_releases_url: "{{ cvm }}https://api.github.com/repos/docker/compose/releases/{{ compose_github_endpoint }}"
+
+compose_releases_download_url: https://github.com/docker/compose/releases/download
+
+compose_release_lookup_command: |
+  curl -s {{ compose_releases_url }} \
+    | jq -r ".assets[] | select(.name | test(\"docker-compose-linux-x86_64\") and (contains(\"sha256\") | not)) \
+    | .browser_download_url"
+
+compose_download_backup_url: "https://github.com/docker/compose/releases/download/v2.6.0/docker-compose-linux-x86_64"
+
+compose_install_switch: true
+
+compose_switch_github_endpoint: "latest"
+
+compose_switch_releases_url: "{{ cvm }}https://api.github.com/repos/docker/compose-switch/releases/{{ compose_switch_github_endpoint }}"
+
+compose_switch_releases_download_url: https://github.com/docker/compose-switch/releases/download
+
+compose_switch_release_lookup_command: |
+  curl -s {{ compose_switch_releases_url }} \
+    | jq -r ".assets[] | select(.name | test(\"docker-compose-linux-amd64\")) \
+    | .browser_download_url"
+
+compose_switch_download_backup_url: "https://github.com/docker/compose-switch/releases/download/v1.0.4/docker-compose-linux-amd64"

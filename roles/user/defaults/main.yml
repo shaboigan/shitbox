@@ -1,0 +1,31 @@
+#########################################################################
+# Title:         Shitbox: User | Default Variables                      #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+# User
+user_paths_home_location: "/home/{{ user.name }}"
+user_paths_home_shitbox_location: "/srv/git/shitbox"
+
+# Overrides
+# user_docker_group_id: <int>
+# user_group_id: <int>
+# user_id: <int>
+
+# srv
+srv_folder: "/srv"
+
+# Shitbox
+shitbox_git_repo_url: "https://github.com/shaboigan/Shitbox.git"
+shitbox_git_repo_dest: "/srv/git/shitbox"
+shitbox_git_repo_branch_primary: "master"
+shitbox_git_repo_branch_secondary: "master"
+
+# CB Scripts
+sb_git_repo_url: "https://github.com/saltyorg/sb.git"
+sb_git_repo_dest: "/srv/git/sb"
+sb_git_repo_branch_primary: "master"

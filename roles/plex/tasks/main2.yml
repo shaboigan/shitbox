@@ -1,0 +1,67 @@
+#########################################################################
+# Title:         Shitbox: Plex Role                                    #
+# Author(s):     desimaniac, l3uddz                                     #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Add DNS record
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/dns/tasker.yml"
+  vars:
+    dns_record: "{{ lookup('vars', role_name + '_dns_record') }}"
+    dns_zone: "{{ lookup('vars', role_name + '_dns_zone') }}"
+    dns_proxy: "{{ lookup('vars', role_name + '_dns_proxy') }}"
+
+- name: Add DNS record
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/dns/tasker.yml"
+  vars:
+    dns_record: "{{ lookup('vars', role_name + '_webtools_dns_record') }}"
+    dns_zone: "{{ lookup('vars', role_name + '_webtools_dns_zone') }}"
+    dns_proxy: "{{ lookup('vars', role_name + '_webtools_dns_proxy') }}"
+  when: plex_plugin_webtools
+
+- name: Remove existing Docker container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/remove_docker_container.yml"
+
+- name: Create directories
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/directories/create_directories.yml"
+
+- name: Remove previously imported files that are no longer needed
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ plex_paths_location }}/98-themepark"
+    - "{{ plex_paths_location }}/99-modify-binary"
+    - "{{ server_appdata_path }}/scripts/bbe"
+
+- name: Delete Plex Codecs Folder
+  ansible.builtin.file:
+    path: "{{ plex_paths_application_support_location }}/Codecs"
+    state: absent
+  when: ('plex-reset-codecs' in ansible_run_tags)
+
+- name: Pre-Install Tasks
+  ansible.builtin.import_tasks: "subtasks/pre-install/main.yml"
+  when: (not continuous_integration)
+
+- name: Preferences Tasks
+  ansible.builtin.import_tasks: "subtasks/preferences/preferences.yml"
+  when: (not continuous_integration)
+
+- name: Docker Devices Task
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/set_docker_devices_variable.yml"
+  when: gpu.intel or gpu.nvidia
+
+- name: Create Docker container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/create_docker_container.yml"
+
+- name: Post-Install Tasks
+  ansible.builtin.import_tasks: "subtasks/post-install/main.yml"
+
+- name: "Execute Plex Extra Tasks role"
+  ansible.builtin.include_role:
+    name: "plex_extra_tasks"
+  when: (plex_plugin_sub_zero or plex_plugin_webtools) and (not continuous_integration)

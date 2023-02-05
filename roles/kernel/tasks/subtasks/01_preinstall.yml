@@ -1,0 +1,17 @@
+#########################################################################
+# Title:         Shitbox: Kernel | Preinstall Tasks                     #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Preinstall | Shitbox pre-install has started!"
+  ansible.builtin.debug:
+    msg: "Shitbox pre-install has started!"
+
+- name: Preinstall | Set default preinstall variables
+  ansible.builtin.set_fact:
+    preinstall_kernel_restart: false
+    preinstall_user_relogin: false

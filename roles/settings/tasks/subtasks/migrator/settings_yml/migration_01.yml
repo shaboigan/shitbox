@@ -1,0 +1,37 @@
+########################################################################################
+# Title:         Shitbox: Settings | Migrator | 'settings.yml' | Migration 01          #
+# Author(s):     salty                                                                 #
+# URL:           https://github.com/shaboigan/Shitbox                                   #
+# --                                                                                   #
+########################################################################################
+#                            GNU General Public License v3.0                           #
+########################################################################################
+
+---
+- name: "Migrator | 'settings.yml' | Migration 01 | Set variables"
+  ansible.builtin.set_fact:
+    old_download: "{{ true if not
+        ((downloads.nzbs is undefined)
+        or
+        (downloads.torrents is undefined))
+        else false }}"
+
+- name: Migrator | 'settings.yml' | Migration 01 | Delete 'downloads' dict
+  ansible.builtin.shell: |
+    yyq e -i 'del(.downloads)' {{ playbook_dir }}/{{ file }}
+    yyq e -i '.downloads = "/mnt/unionfs/downloads"' {{ playbook_dir }}/{{ file }}
+  become: true
+  become_user: "{{ shitbox_yml.stat.pw_name }}"
+  when: old_download
+
+- name: Migrator | 'adv_settings.yml' | Migration 01 | Remove 'null' values
+  ansible.builtin.replace:
+    path: "{{ playbook_dir }}/{{ file }}"
+    regexp: '(?<=: )\bnull\s*$'
+    replace: ''
+    owner: "{{ shitbox_yml.stat.uid }}"
+    group: "{{ shitbox_yml.stat.gid }}"
+    mode: 0664
+
+- name: Migrator | 'adv_settings.yml' | Migration 01 | Re-import Variables
+  ansible.builtin.include_vars: "{{ playbook_dir }}/{{ file }}"

@@ -1,0 +1,16 @@
+#########################################################################
+# Title:         Shitbox: Lidarr Role                                   #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Execute Lidarr roles"
+  ansible.builtin.include_tasks: main2.yml
+  vars:
+    lidarr_name: "{{ role }}"
+  with_items: "{{ lidarr_instances }}"
+  loop_control:
+    loop_var: role

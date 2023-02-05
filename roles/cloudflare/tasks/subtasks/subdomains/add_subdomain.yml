@@ -1,0 +1,34 @@
+#########################################################################
+# Title:         Shitbox: Cloudflare | Subdomains | Add Subdomain       #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Subdomains | Add Subdomain | Cloudflare: DNS Record for '{{ shitbox_type }}' set to '{{ ip_address_public }}' was added. Proxy: {{ dns.proxied | default('no') }}"
+  community.general.cloudflare_dns:
+    account_api_token: "{{ cloudflare.api }}"
+    account_email: "{{ cloudflare.email }}"
+    zone: "{{ fld.stdout }}"
+    state: present
+    solo: true
+    proxied: "{{ dns.proxied | default('no') }}"
+    type: A
+    value: "{{ ip_address_public }}"
+    record: "{{ shitbox_type }}"
+  when: dns.ipv4
+
+- name: "Subdomains | Add Subdomain | Cloudflare: DNS Record for '{{ shitbox_type }}' set to '{{ ipv6_address_public }}' was added. Proxy: {{ dns.proxied | default('no') }}"
+  community.general.cloudflare_dns:
+    account_api_token: "{{ cloudflare.api }}"
+    account_email: "{{ cloudflare.email }}"
+    zone: "{{ fld.stdout }}"
+    state: present
+    solo: true
+    proxied: "{{ dns.proxied | default('no') }}"
+    type: AAAA
+    value: "{{ ipv6_address_public }}"
+    record: "{{ shitbox_type }}"
+  when: dns.ipv6

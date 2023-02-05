@@ -1,0 +1,21 @@
+#########################################################################
+# Title:         Shitbox: Subliminal Role                               #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Install Subliminal
+  ansible.builtin.shell: "pip install git+https://github.com/Diaoul/subliminal.git@develop"
+  ignore_errors: true
+
+- name: "Get Subliminal version"
+  ansible.builtin.shell: "/usr/local/bin/subliminal --version | head -n 1 | awk '{ print $3 }'"
+  register: subliminal_version
+  ignore_errors: true
+
+- name: "Display Subliminal version"
+  ansible.builtin.debug:
+    msg: "Subliminal {{ subliminal_version.stdout }} installed."

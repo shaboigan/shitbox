@@ -1,0 +1,195 @@
+#########################################################################
+# Title:         Shitbox: Common Role                                   #
+# Author(s):     l3uddz, desimaniac, salty                              #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: BTRFS Tasks
+  ansible.builtin.include_tasks: "btrfs.yml"
+  loop:
+    - /opt
+    - /mnt/local
+  loop_control:
+    loop_var: outer_item
+
+- name: Create common directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"
+  with_items:
+    - /home/{{ user.name }}
+    - /home/{{ user.name }}/logs
+    - /home/{{ user.name }}/.config
+    - /home/{{ user.name }}/.config/pip
+    - /opt
+    - /mnt/local
+    - /mnt/local/Media
+    - /mnt/local/Media/Movies
+    - /mnt/local/Media/Music
+    - /mnt/local/Media/TV
+
+- name: Check if 'localhost.yml' exists
+  ansible.builtin.stat:
+    path: "/srv/git/shitbox/inventories/host_vars/localhost.yml"
+  register: localhost_yml
+
+- name: "Import 'localhost.yml'"
+  ansible.builtin.copy:
+    src: "localhost.yml"
+    dest: "/srv/git/shitbox/inventories/host_vars/localhost.yml"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: 0775
+  when: (not localhost_yml.stat.exists)
+
+- name: Install required packages
+  ansible.builtin.apt:
+    state: present
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - software-properties-common
+
+- name: Add Ubuntu repositories
+  ansible.builtin.apt_repository:
+    repo: "{{ item }}"
+    state: present
+    update_cache: true
+  with_items:
+    - 'deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} multiverse'
+    - 'deb-src http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} multiverse'
+    - 'deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates multiverse'
+    - 'deb-src http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates multiverse'
+  when: (ansible_distribution == 'Ubuntu') and (not continuous_integration)
+
+- name: Install common packages
+  ansible.builtin.apt:
+    state: present
+    name:
+      - "nano"
+      - "zip"
+      - "unzip"
+      - "p7zip"
+      - "curl"
+      - "sqlite3"
+      - "tree"
+      - "lsof"
+      - "man-db"
+      - "git"
+      - "pwgen"
+      - "rsync"
+      - "logrotate"
+      - "htop"
+      - "iotop"
+      - "nload"
+      - "ufw"
+      - "ncdu"
+      - "mc"
+      - "speedtest-cli"
+      - "dnsutils"
+      - "screen"
+      - "tmux"
+      - "apache2-utils"
+      - "jq"
+      - "lib32z1"
+      - "moreutils"
+      - "unrar"
+      - "python3-virtualenv"
+  ignore_errors: true
+
+- name: Install extra packages
+  ansible.builtin.apt:
+    state: present
+    name:
+      - "run-one"
+  ignore_errors: true
+
+- name: Install common Python packages (Ansible venv)
+  ansible.builtin.pip:
+    name:
+      - "tld"
+      - "argon2_cffi"
+      - "ndg-httpsclient"
+      - "dnspython"
+      - "lxml"
+      - "jmespath"
+      - "passlib"
+      - "PyMySQL"
+      - "docker"
+    state: "latest"
+
+- name: Install common Python packages (System Python)
+  ansible.builtin.pip:
+    name: apprise
+    executable: pip3
+    state: "latest"
+
+- name: Fetch PCI Info
+  ansible.builtin.shell: "lspci -v -s $(lspci | grep -E '.*VGA.*Intel.*' | cut -d' ' -f 1) 2>/dev/null || :"
+  register: lscpi_resp
+  when: gpu.intel
+
+- name: Install 'intel-gpu-tools'
+  ansible.builtin.apt:
+    state: present
+    name:
+      - "intel-gpu-tools"
+  when:
+    - gpu.intel
+    - ('i915' in lscpi_resp.stdout)
+
+- name: Check to see if 'unrar' installed
+  ansible.builtin.stat:
+    path: "/usr/bin/unrar"
+  register: unrar_binary
+
+- name: Install 'unrar-free' if 'unrar' was not installed
+  ansible.builtin.apt:
+    name: unrar-free
+    state: present
+  ignore_errors: true
+  when: (not unrar_binary.stat.exists)
+
+- name: "Import 'pip.conf'"
+  ansible.builtin.copy:
+    src: "pip.conf"
+    dest: "/home/{{ user.name }}/.config/pip/pip.conf"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: 0775
+    force: true
+
+- name: "Check to see if yyq is installed"
+  ansible.builtin.stat:
+    path: "/usr/local/bin/yyq"
+  register: yyq_binary
+
+- name: "Get yyq version"
+  ansible.builtin.shell: "/usr/local/bin/yyq --version | head -n 1 | grep -oP '(?<=version )[^ ]*'"
+  register: yyq_version_settings_check
+  ignore_errors: true
+  when: yyq_binary.stat.exists
+
+- name: "Set yyq version"
+  ansible.builtin.set_fact:
+    yyq_current_version: "{{ yyq_version_settings_check.stdout
+                          if yyq_version_settings_check.stdout is defined
+                          else '0.0.0' }}"
+
+- name: "Install yyq"
+  ansible.builtin.include_role:
+    name: yyq
+  when: (yyq_current_version is version(yyq_install_version, 'lt', version_type='semver'))
+        or (not yyq_binary.stat.exists)
+
+- name: "Install Nano Syntax Highlighting"
+  ansible.builtin.shell: "curl https://raw.githubusercontent.com/scopatz/nanorc/master/install.sh | sh"
+  become: true
+  become_user: "{{ user.name }}"
+  when: nano_syntax_highlighting_enabled

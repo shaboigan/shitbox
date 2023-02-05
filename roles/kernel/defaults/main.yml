@@ -1,0 +1,24 @@
+#########################################################################
+# Title:         Shitbox: Kernel | Default Variables                    #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+################################
+# Cron
+################################
+
+kernel_cron_task: "PATH='/usr/sbin:/usr/bin:/sbin:/bin' purge-old-kernels -qy"
+
+################################
+# Update
+################################
+
+kernel_update_apt_package: linux-generic-hwe-20.04
+
+kernel_update_apt_fix: apt-get --fix-broken --yes install
+
+kernel_update_apt_package_22: linux-generic-hwe-22.04

@@ -1,0 +1,19 @@
+#########################################################################
+# Title:         Shitbox: DNS | Cloudflare                              #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Cloudflare | Validate API Key
+  ansible.builtin.include_tasks: "subtasks/validate.yml"
+
+- name: Cloudflare | Add DNS Record
+  ansible.builtin.include_tasks: "subtasks/add_dns_record.yml"
+  when: dns_action != 'remove'
+
+- name: Cloudflare | Remove DNS Record
+  ansible.builtin.include_tasks: "subtasks/remove_dns_record.yml"
+  when: dns_action == 'remove'

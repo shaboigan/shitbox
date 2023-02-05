@@ -1,0 +1,60 @@
+##########################################################################
+# Title:         Shitbox: Cloudplow | Default Variables                  #
+# Author(s):     desimaniac, salty                                       #
+# URL:           https://github.com/shaboigan/Shitbox                     #
+# --                                                                     #
+##########################################################################
+#                   GNU General Public License v3.0                      #
+##########################################################################
+---
+################################
+# Name
+################################
+
+cloudplow_name: cloudplow
+
+################################
+# Paths
+################################
+
+cloudplow_folder: "{{ cloudplow_name }}"
+
+cloudplow_path: "{{ server_appdata_path }}/{{ cloudplow_folder }}"
+
+cloudplow_venv_path: "{{ cloudplow_path }}/venv"
+
+cloudplow_python_path: "{{ cloudplow_bin_folder }}/python3"
+
+cloudplow_script_path: "{{ cloudplow_path }}/cloudplow.py"
+
+cloudplow_requirements_path: "{{ cloudplow_path }}/requirements.txt"
+
+cloudplow_config_path: "{{ cloudplow_path }}/config.json"
+
+cloudplow_alias_path: "/usr/local/bin/{{ cloudplow_name }}"
+
+################################
+# GitHub Repository
+################################
+
+cloudplow_git_repo_url: "https://github.com/l3uddz/cloudplow.git"
+
+cloudplow_git_repo_dest: "{{ cloudplow_path }}"
+
+cloudplow_git_repo_branch_primary: "master"
+
+cloudplow_git_repo_branch_secondary: "develop"
+
+################################
+# Systemd
+################################
+
+cloudplow_service_name: "{{ cloudplow_name }}"
+
+################################
+# Rclone
+################################
+
+rclone_config_path: "/home/{{ user.name }}/.config/rclone/rclone.conf"
+
+rclone_binary_path: "/usr/bin/rclone"

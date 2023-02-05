@@ -1,0 +1,13 @@
+#########################################################################
+# Title:         Shitbox: UnionFS | Docker | Container Start Tasks      #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Docker | Containers Start | Start all previously running Docker containers"
+  ansible.builtin.shell: "docker start {{ containers_list }}"
+  ignore_errors: true
+  when: (containers_list | trim | length > 0)

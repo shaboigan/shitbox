@@ -1,0 +1,183 @@
+##########################################################################
+# Title:         Shitbox: Sonarr | Default Variables                     #
+# Author(s):     desimaniac, salty                                       #
+# URL:           https://github.com/shaboigan/Shitbox                     #
+# --                                                                     #
+##########################################################################
+#                   GNU General Public License v3.0                      #
+##########################################################################
+---
+################################
+# Basics
+################################
+
+sonarr_instances: ["sonarr"]
+
+################################
+# Paths
+################################
+
+sonarr_paths_folder: "{{ sonarr_name }}"
+sonarr_paths_location: "{{ server_appdata_path }}/{{ sonarr_paths_folder }}"
+sonarr_paths_folders_list:
+  - "{{ sonarr_paths_location }}"
+sonarr_paths_config_location: "{{ sonarr_paths_location }}/config.xml"
+
+################################
+# Web
+################################
+
+sonarr_web_subdomain: "{{ sonarr_name }}"
+sonarr_web_domain: "{{ user.domain }}"
+sonarr_web_port: "8989"
+sonarr_web_url: "{{ 'https://' + lookup('vars', sonarr_name + '_web_subdomain', default=sonarr_web_subdomain)
+                    + '.' + lookup('vars', sonarr_name + '_web_domain', default=sonarr_web_domain) }}"
+
+################################
+# DNS
+################################
+
+sonarr_dns_record: "{{ lookup('vars', sonarr_name + '_web_subdomain', default=sonarr_web_subdomain) }}"
+sonarr_dns_zone: "{{ lookup('vars', sonarr_name + '_web_domain', default=sonarr_web_domain) }}"
+sonarr_dns_proxy: "{{ dns.proxied }}"
+
+################################
+# Traefik
+################################
+
+sonarr_traefik_sso_middleware: "{{ traefik_default_sso_middleware }}"
+
+sonarr_traefik_middleware_default: "{{ traefik_default_middleware + ','
+                                       + lookup('vars', sonarr_name + '_traefik_sso_middleware', default=sonarr_traefik_sso_middleware)
+                                    if (lookup('vars', sonarr_name + '_traefik_sso_middleware', default=sonarr_traefik_sso_middleware) | length > 0)
+                                    else traefik_default_middleware }}"
+sonarr_traefik_middleware_custom: ""
+sonarr_traefik_middleware: "{{ sonarr_traefik_middleware_default + ','
+                               + sonarr_traefik_middleware_custom
+                            if (not sonarr_traefik_middleware_custom.startswith(',') and sonarr_traefik_middleware_custom | length > 0)
+                            else sonarr_traefik_middleware_default
+                               + sonarr_traefik_middleware_custom }}"
+
+sonarr_traefik_certresolver: "{{ traefik_default_certresolver }}"
+sonarr_traefik_enabled: true
+sonarr_traefik_api_enabled: true
+sonarr_traefik_api_endpoint: "`/api`,`/feed`"
+
+################################
+# API
+################################
+
+# default to blank
+sonarr_api_key:
+
+################################
+# THEME
+################################
+
+# Options can be found at https://github.com/gilbN/theme.park
+sonarr_themepark_enabled: false
+sonarr_themepark_theme: "{{ global_themepark_theme }}"
+sonarr_themepark_domain: "{{ global_themepark_domain }}"
+
+################################
+# Docker
+################################
+
+# Container
+sonarr_docker_container: "{{ sonarr_name }}"
+
+# Image
+sonarr_docker_image_pull: true
+sonarr_docker_image_repo: "cr.hotio.dev/hotio/sonarr"
+sonarr_docker_image_tag: "release"
+sonarr_docker_image: "{{ lookup('vars', sonarr_name + '_docker_image_repo', default=sonarr_docker_image_repo)
+                         + ':' + lookup('vars', sonarr_name + '_docker_image_tag', default=sonarr_docker_image_tag) }}"
+
+# Ports
+sonarr_docker_ports_defaults: []
+sonarr_docker_ports_custom: []
+sonarr_docker_ports: "{{ lookup('vars', sonarr_name + '_docker_ports_defaults', default=sonarr_docker_ports_defaults)
+                         + lookup('vars', sonarr_name + '_docker_ports_custom', default=sonarr_docker_ports_custom) }}"
+
+# Envs
+sonarr_docker_envs_default:
+  PUID: "{{ uid }}"
+  PGID: "{{ gid }}"
+  UMASK: "002"
+  TZ: "{{ tz }}"
+  TP_DOMAIN: "{{ lookup('vars', sonarr_name + '_themepark_domain', default=sonarr_themepark_domain) }}"
+  TP_THEME: "{{ lookup('vars', sonarr_name + '_themepark_theme', default=sonarr_themepark_theme) }}"
+  TP_HOTIO: "true"
+sonarr_docker_envs_custom: {}
+sonarr_docker_envs: "{{ lookup('vars', sonarr_name + '_docker_envs_default', default=sonarr_docker_envs_default)
+                        | combine(lookup('vars', sonarr_name + '_docker_envs_custom', default=sonarr_docker_envs_custom)) }}"
+
+# Commands
+sonarr_docker_commands_default: []
+sonarr_docker_commands_custom: []
+sonarr_docker_commands: "{{ lookup('vars', sonarr_name + '_docker_commands_default', default=sonarr_docker_commands_default)
+                            + lookup('vars', sonarr_name + '_docker_docker_commands_custom', default=sonarr_docker_commands_custom) }}"
+
+# Volumes
+sonarr_docker_volumes_default:
+  - "{{ sonarr_paths_location }}:/config"
+  - "{{ server_appdata_path }}/scripts:/scripts"
+  - "/mnt/unionfs/Media/TV:/tv"
+sonarr_docker_volumes_custom: []
+sonarr_docker_volumes_theme:
+  - "{{ sonarr_paths_location }}/98-themepark:/etc/cont-init.d/98-themepark"
+sonarr_docker_volumes: "{{ lookup('vars', sonarr_name + '_docker_volumes_default', default=sonarr_docker_volumes_default)
+                           + lookup('vars', sonarr_name + '_docker_volumes_custom', default=sonarr_docker_volumes_custom)
+                        if not (lookup('vars', sonarr_name + '_themepark_enabled', default=sonarr_themepark_enabled))
+                        else lookup('vars', sonarr_name + '_docker_volumes_default', default=sonarr_docker_volumes_default)
+                           + lookup('vars', sonarr_name + '_docker_volumes_custom', default=sonarr_docker_volumes_custom)
+                           + lookup('vars', sonarr_name + '_docker_volumes_theme', default=sonarr_docker_volumes_theme) }}"
+
+# Devices
+sonarr_docker_devices_default: []
+sonarr_docker_devices_custom: []
+sonarr_docker_devices: "{{ lookup('vars', sonarr_name + '_docker_devices_default', default=sonarr_docker_devices_default)
+                           + lookup('vars', sonarr_name + '_docker_devices_custom', default=sonarr_docker_devices_custom) }}"
+
+# Hosts
+sonarr_docker_hosts_default: []
+sonarr_docker_hosts_custom: []
+sonarr_docker_hosts: "{{ docker_hosts_common
+                         | combine(lookup('vars', sonarr_name + '_docker_hosts_default', default=sonarr_docker_hosts_default))
+                         | combine(lookup('vars', sonarr_name + '_docker_hosts_custom', default=sonarr_docker_hosts_custom)) }}"
+
+# Labels
+sonarr_docker_labels_default: {}
+sonarr_docker_labels_custom: {}
+sonarr_docker_labels: "{{ docker_labels_common
+                          | combine(lookup('vars', sonarr_name + '_docker_labels_default', default=sonarr_docker_labels_default))
+                          | combine(lookup('vars', sonarr_name + '_docker_labels_custom', default=sonarr_docker_labels_custom)) }}"
+
+# Hostname
+sonarr_docker_hostname: "{{ sonarr_name }}"
+
+# Networks
+sonarr_docker_networks_alias: "{{ sonarr_name }}"
+sonarr_docker_networks_default: []
+sonarr_docker_networks_custom: []
+sonarr_docker_networks: "{{ docker_networks_common
+                            + lookup('vars', sonarr_name + '_docker_networks_default', default=sonarr_docker_networks_default)
+                            + lookup('vars', sonarr_name + '_docker_networks_custom', default=sonarr_docker_networks_custom) }}"
+
+# Capabilities
+sonarr_docker_capabilities_default: []
+sonarr_docker_capabilities_custom: []
+sonarr_docker_capabilities: "{{ lookup('vars', sonarr_name + '_docker_capabilities_default', default=sonarr_docker_capabilities_default)
+                                + lookup('vars', sonarr_name + '_docker_capabilities_custom', default=sonarr_docker_capabilities_custom) }}"
+
+# Security Opts
+sonarr_docker_security_opts_default: []
+sonarr_docker_security_opts_custom: []
+sonarr_docker_security_opts: "{{ lookup('vars', sonarr_name + '_docker_security_opts_default', default=sonarr_docker_security_opts_default)
+                                 + lookup('vars', sonarr_name + '_docker_security_opts_custom', default=sonarr_docker_security_opts_custom) }}"
+
+# Restart Policy
+sonarr_docker_restart_policy: unless-stopped
+
+# State
+sonarr_docker_state: started

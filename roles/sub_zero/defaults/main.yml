@@ -1,0 +1,24 @@
+##########################################################################
+# Title:         Shitbox: Plex Plugins / Sub-Zero | Default Variables    #
+# Author(s):     desimaniac                                              #
+# URL:           https://github.com/shaboigan/Shitbox                     #
+# --                                                                     #
+##########################################################################
+#                   GNU General Public License v3.0                      #
+##########################################################################
+---
+################################
+# Paths
+################################
+
+plex_plugin_subzero_paths_location: "{{ plex_paths_plugins_location }}/Sub-Zero.bundle"
+
+plex_plugin_subzero_paths_info_plist_location: "{{ plex_plugin_subzero_paths_location }}/Contents/Info.plist"
+
+################################
+# Repository
+################################
+
+plex_plugin_subzero_release_url: "{{ cvm }}https://api.github.com/repos/pannal/Sub-Zero.bundle/releases/latest"
+
+plex_plugin_subzero_download_url_backup: https://github.com/pannal/Sub-Zero.bundle/releases/download/2.6.5.3152/Sub-Zero.bundle-2.6.5.3152.zip

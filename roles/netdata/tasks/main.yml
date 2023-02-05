@@ -1,0 +1,47 @@
+#########################################################################
+# Title:         Shitbox: Netdata Role                                  #
+# Author(s):     desimaniac, l3uddz, salty                              #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Add DNS record
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/dns/tasker.yml"
+  vars:
+    dns_record: "{{ lookup('vars', role_name + '_dns_record') }}"
+    dns_zone: "{{ lookup('vars', role_name + '_dns_zone') }}"
+    dns_proxy: "{{ lookup('vars', role_name + '_dns_proxy') }}"
+
+- name: Create Docker Socket Proxy container
+  ansible.builtin.include_role:
+    name: docker_socket_proxy
+  vars:
+    docker_socket_proxy_name: "netdata-docker-socket-proxy"
+    docker_socket_proxy_docker_envs_custom: "{{ netdata_docker_socket_proxy_envs }}"
+
+- name: Remove existing Docker container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/remove_docker_container.yml"
+
+- name: Check if '{{ netdata_paths_config_file_location }}' exists
+  ansible.builtin.stat:
+    path: "{{ netdata_paths_config_file_location }}"
+  register: netdata_config
+
+- name: Create directories
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/directories/create_directories.yml"
+
+- name: Settings Task
+  ansible.builtin.import_tasks: "subtasks/settings.yml"
+  when: (not netdata_config.stat.exists)
+
+- name: Create a volume
+  community.docker.docker_volume:
+    name: "{{ item }}"
+  with_items:
+    - netdatalib
+    - netdatacache
+
+- name: Create Docker container
+  ansible.builtin.include_tasks: "{{ resources_tasks_path }}/docker/create_docker_container.yml"

@@ -1,0 +1,18 @@
+---
+user:
+  name: seed
+  pass: password123
+  domain: testshitbox.ml
+  email: your@email.com
+  ssh_key:
+cloudflare:
+  email:
+  api:
+plex:
+  user:
+  pass:
+  tfa: no
+dockerhub:
+  user:
+  token:
+apprise:

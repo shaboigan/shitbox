@@ -1,0 +1,16 @@
+#########################################################################
+# Title:         Shitbox: Traktarr Role                                 #
+# Author(s):     l3uddz, desimaniac, salty                              #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Execute Traktarr roles"
+  ansible.builtin.include_tasks: main2.yml
+  vars:
+    traktarr_name: "{{ role }}"
+  with_items: "{{ traktarr_instances }}"
+  loop_control:
+    loop_var: role

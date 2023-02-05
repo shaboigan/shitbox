@@ -1,0 +1,84 @@
+########################################################################################
+# Title:         Shitbox: Settings | Migrator | 'adv_settings.yml' | Migration 01      #
+# Author(s):     desimaniac, salty                                                     #
+# URL:           https://github.com/shaboigan/Shitbox                                   #
+# --                                                                                   #
+########################################################################################
+#                            GNU General Public License v3.0                           #
+########################################################################################
+
+---
+- name: "Migrator | 'adv_settings.yml' | Migration 01 | Set variables"
+  ansible.builtin.set_fact:
+    traefik_tls_settings: "{{ true if not
+        ((traefik is undefined)
+        or
+        (traefik is none)
+        or
+        (traefik | trim | length == 0)
+        or
+        (traefik.tls is undefined)
+        or
+        (traefik.tls is none)
+        or
+        (traefik.tls | trim | length == 0))
+        else false }}"
+
+- name: Migrator | 'adv_settings.yml' | Migration 01 | Rebuild 'traefik.tls' dict
+  ansible.builtin.shell: |
+    yyq e -i '.traefik.tls = "no"' {{ playbook_dir }}/{{ file }}
+  become: true
+  become_user: "{{ shitbox_yml.stat.pw_name }}"
+  when: (not traefik_tls_settings)
+
+- name: "Migrator | 'adv_settings.yml' | Migration 01 | Set variables"
+  ansible.builtin.set_fact:
+    traefik_metrics_settings: "{{ true if not
+        ((traefik is undefined)
+        or
+        (traefik is none)
+        or
+        (traefik | trim | length == 0)
+        or
+        (traefik.metrics is undefined)
+        or
+        (traefik.metrics is none)
+        or
+        (traefik.metrics | trim | length == 0))
+        else false }}"
+
+- name: Migrator | 'adv_settings.yml' | Migration 01 | Rebuild 'traefik.metrics' dict
+  ansible.builtin.shell: |
+    yyq e -i '.traefik.metrics = "no"' {{ playbook_dir }}/{{ file }}
+  become: true
+  become_user: "{{ shitbox_yml.stat.pw_name }}"
+  when: (not traefik_metrics_settings)
+
+- name: "Migrator | 'adv_settings.yml' | Migration 01 | Set variables"
+  ansible.builtin.set_fact:
+    old_dockerhub: "{{ true if not
+        ((dockerhub is undefined)
+        or
+        (dockerhub is none)
+        or
+        (dockerhub | trim | length == 0))
+        else false }}"
+
+- name: Migrator | 'adv_settings.yml' | Migration 01 | Delete 'dockerhub' dict
+  ansible.builtin.shell: |
+    yyq e -i 'del(.dockerhub)' {{ playbook_dir }}/{{ file }}
+  become: true
+  become_user: "{{ shitbox_yml.stat.pw_name }}"
+  when: old_dockerhub
+
+- name: Migrator | 'adv_settings.yml' | Migration 01 | Remove 'null' values
+  ansible.builtin.replace:
+    path: "{{ playbook_dir }}/{{ file }}"
+    regexp: '(?<=: )\bnull\s*$'
+    replace: ''
+    owner: "{{ shitbox_yml.stat.uid }}"
+    group: "{{ shitbox_yml.stat.gid }}"
+    mode: 0664
+
+- name: Migrator | 'adv_settings.yml' | Migration 01 | Re-import Variables
+  ansible.builtin.include_vars: "{{ playbook_dir }}/{{ file }}"

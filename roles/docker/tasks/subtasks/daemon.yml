@@ -1,0 +1,67 @@
+#########################################################################
+# Title:         Shitbox: Docker | Daemon Tasks                         #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: fuse-overlayfs Block
+  when: (docker_daemon_storage_driver == "fuse-overlayfs")
+  block:
+    - name: "Get URL for latest fuse-overlayfs release"
+      ansible.builtin.shell: "{{ fuse_overlayfs_release_lookup_command }}"
+      args:
+        executable: /bin/bash
+      register: fuse_overlayfs_download_url
+      ignore_errors: true
+
+    - name: Download fuse-overlayfs
+      ansible.builtin.get_url:
+        url: "{{ fuse_overlayfs_download_url.stdout }}"
+        dest: "/usr/local/bin/fuse-overlayfs"
+        mode: '0755'
+
+- name: Create docker directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0775
+    owner: root
+    group: root
+  with_items:
+    - /etc/docker
+
+- name: "Daemon | Import 'daemon.json'"
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    mode: 0775
+    force: true
+
+- name: "Daemon | Create override directory"
+  ansible.builtin.file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: 0644
+
+- name: "Daemon | Import override file"
+  ansible.builtin.template:
+    src: override.conf.j2
+    dest: /etc/systemd/system/docker.service.d/override.conf
+    mode: 0644
+    force: false
+
+- name: "Daemon | Edit override file"
+  community.general.ini_file:
+    path: /etc/systemd/system/docker.service.d/override.conf
+    section: Unit
+    option: "After"
+    value: "{{ docker_service_after }}"
+    state: present
+    mode: '0644'
+    no_extra_spaces: true
+
+- name: "Daemon | Remove old init entry from '/etc/docker/daemon.json'"
+  ansible.builtin.shell: jq 'del(."init")' /etc/docker/daemon.json  | sponge /etc/docker/daemon.json

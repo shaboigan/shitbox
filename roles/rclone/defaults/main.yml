@@ -1,0 +1,15 @@
+#########################################################################
+# Title:         Shitbox: Rclone | Default Variables                    #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+rclone_latest_releases_url: "{{ cvm }}https://api.github.com/repos/rclone/rclone/releases/latest"
+
+rclone_latest_release_lookup_command: |
+  curl -s {{ rclone_latest_releases_url }} \
+    | jq -r ".assets[] |select(.name | test(\"linux-amd64.zip\")) \
+    | .browser_download_url"

@@ -1,0 +1,118 @@
+#########################################################################
+# Title:         Shitbox: Shell | ZSH Tasks                             #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: ZSH | Install 'zsh'
+  ansible.builtin.apt:
+    name: "{{ shell_zsh_apt_packages_list }}"
+    state: present
+
+- name: ZSH | Clone 'oh-my-zsh' repo
+  ansible.builtin.git:
+    repo: "{{ shell_zsh_omzsh_git_repo_url }}"
+    dest: "{{ shell_zsh_omzsh_git_repo_dest }}"
+    clone: true
+    version: HEAD
+    force: true
+  become: true
+  become_user: "{{ user.name }}"
+  register: cloning
+  ignore_errors: true
+
+- name: ZSH | Check if an existing '.zshrc' file is present
+  ansible.builtin.stat:
+    path: "{{ shell_zsh_zshrc_path }}"
+  register: existing_zshrc
+
+- name: ZSH | Create '{{ shell_zsh_zshrc_path }}' file
+  ansible.builtin.copy:
+    src: "{{ shell_zsh_zshrc_template_path }}"
+    dest: "{{ shell_zsh_zshrc_path }}"
+    group: "{{ user.name }}"
+    owner: "{{ user.name }}"
+    mode: "0664"
+  when: (cloning is success) and (not existing_zshrc.stat.exists)
+
+- name: ZSH | Add items to '{{ shell_zsh_zshrc_path }}'
+  ansible.builtin.blockinfile:
+    path: "{{ shell_zsh_zshrc_path }}"
+    marker: "### SHITBOX MANAGED BLOCK 1 - {mark} ###"
+    block: "{{ shell_zsh_zshrc_block_content1 }}"
+    insertbefore: BOF
+    state: present
+    create: false
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0664"
+
+- name: ZSH | Add items to '{{ shell_zsh_zshrc_path }}'
+  ansible.builtin.blockinfile:
+    path: "{{ shell_zsh_zshrc_path }}"
+    marker: "### SHITBOX MANAGED BLOCK 2 - {mark} ###"
+    block: "{{ shell_zsh_zshrc_block_content2 }}"
+    state: present
+    create: false
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0664"
+
+- name: ZSH | Add custom items to '{{ shell_zsh_zshrc_path }}'
+  ansible.builtin.blockinfile:
+    path: "{{ shell_zsh_zshrc_path }}"
+    marker: "### SHITBOX MANAGED BLOCK CUSTOM - {mark} ###"
+    block: "{{ shell_zsh_zshrc_block_custom }}"
+    state: present
+    create: false
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0664"
+  when: (shell_zsh_zshrc_block_custom | length > 0)
+
+- name: ZSH | Enable plugins
+  community.general.ini_file:
+    path: "{{ shell_zsh_zshrc_path }}"
+    section: null
+    option: plugins
+    value: "{{ shell_zsh_plugins }}"
+    no_extra_spaces: true
+    create: false
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0664"
+
+# alternatives link
+- name: ZSH | Check if '/bin/zsh' exists
+  ansible.builtin.stat:
+    path: "{{ shell_zsh_binary_path }}"
+  register: shell_zsh_binary_path_stat
+
+- name: ZSH | Create an 'alternatives link' to '{{ shell_zsh_binary_path }}'
+  community.general.alternatives:
+    name: zsh
+    link: "{{ shell_zsh_binary_path }}"
+    path: "{{ shell_zsh_binary_previous_path }}"
+  when: (not shell_zsh_binary_path_stat.stat.exists)
+
+# set as default shell
+- name: ZSH | Set ZSH as default shell
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    shell: "{{ shell_zsh_binary_path }}"
+  register: shell_update_task
+
+- name: ZSH | Set ZSH as default shell
+  ansible.builtin.debug:
+    msg:
+      - "Set ZSH as default shell"
+  when: (shell_update_task is changed)
+
+- name: ZSH | Default shell set to ZSH
+  ansible.builtin.debug:
+    msg:
+      - "Changes will apply on session restart."
+  when: (shell_update_task is changed) and ('shell' in ansible_run_tags)

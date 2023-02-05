@@ -1,0 +1,34 @@
+###########################################################################
+# Title:         Shitbox: Resources | Tasks | Instances | Get Lidarr Info #
+# Author(s):     salty                                                    #
+# URL:           https://github.com/shaboigan/Shitbox                      #
+# --                                                                      #
+###########################################################################
+#                   GNU General Public License v3.0                       #
+###########################################################################
+---
+- name: Resources | Tasks | Instances | Get Info | Check if Lidarr exists
+  ansible.builtin.stat:
+    path: "{{ lidarr_paths_config_location }}"
+  register: lidarr_paths_config_location_stat
+
+- name: Resources | Tasks | Instances | Get Info | Lidarr API Key tasks
+  block:
+
+    - name: Resources | Tasks | Instances | Get Info | Fetch Lidarr API Key
+      community.general.xml:
+        path: "{{ lidarr_paths_config_location }}"
+        xpath: /Config/ApiKey
+        content: text
+      register: xmlresp
+
+    - name: Resources | Tasks | Instances | Get Info | Set 'lidarr_info' variable
+      ansible.builtin.set_fact:
+        lidarr_info: "{{ lidarr_info | default({}) | combine({lidarr_name: {'name': lidarr_name, 'url': lidarr_web_url, 'api_key': xmlresp.matches[0].ApiKey}}) }}"
+
+  when: (lidarr_paths_config_location_stat.stat.exists)
+
+- name: Resources | Tasks | Instances | Get Info | Set 'lidarr_info' variable
+  ansible.builtin.set_fact:
+    lidarr_info: "{{ lidarr_info | default({}) | combine({lidarr_name: {'name': lidarr_name, 'url': lidarr_web_url, 'api_key': 'not installed'}}) }}"
+  when: (not lidarr_paths_config_location_stat.stat.exists)

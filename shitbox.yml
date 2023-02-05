@@ -1,0 +1,77 @@
+---
+- hosts: localhost
+  module_defaults:
+    ansible.builtin.setup:
+      fact_path: "/srv/git/shitbox/ansible_facts.d"
+  vars_files:
+    - ['accounts.yml', 'defaults/accounts.yml.default']
+    - ['settings.yml', 'defaults/settings.yml.default']
+    - ['adv_settings.yml', 'defaults/adv_settings.yml.default']
+    - ['backup_config.yml', 'defaults/backup_config.yml.default']
+    - ['providers.yml', 'defaults/providers.yml.default']
+  roles:
+    - { role: settings, tags: ['settings'] }
+    - { role: pre_tasks, tags: ['always', 'pre_tasks'] }
+    - { role: sanity_check, tags: ['sanity_check'] }
+    - { role: backup, tags: ['backup'] }
+    - { role: backup2, tags: ['backup2'] }
+    - { role: restore, tags: ['restore'] }
+    # Core
+    - { role: kernel, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'preinstall', 'kernel'] }
+    - { role: hetzner, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'preinstall', 'hetzner'] }
+    - { role: user, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'preinstall', 'user'] }
+    - { role: shell, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'preinstall', 'shell'] }
+    - { role: rclone, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'preinstall', 'rclone'] }
+    - { role: system, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'system'] }
+    - { role: common, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'common'] }
+    - { role: motd, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'motd'] }
+    - { role: docker, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'docker'] }
+    - { role: remote, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'mounts', 'mounts_override'], when: ['use_remote'] }
+    - { role: unionfs, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'mounts', 'mounts_override'] }
+    - { role: scripts, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'scripts'] }
+    - { role: traefik, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'traefik', 'traefik_reset_certs'] }
+    - { role: cloudflare, tags: ['core', 'shitbox', 'mediabox', 'feederbox', 'cloudflare'], when: ['cloudflare_is_enabled'] }
+    # Apps Start
+    - { role: media_server, tags: ['shitbox', 'mediabox', 'media-server'] }
+    - { role: tautulli, tags: ['shitbox', 'mediabox', 'tautulli'] }
+    - { role: overseerr, tags: ['shitbox', 'mediabox', 'overseerr'] }
+    - { role: cloudplow, tags: ['shitbox', 'feederbox', 'cloudplow'], when: ['use_remote'] }
+    - { role: sonarr, tags: ['shitbox', 'feederbox', 'sonarr'] }
+    - { role: radarr, tags: ['shitbox', 'feederbox', 'radarr'] }
+    - { role: lidarr, tags: ['shitbox', 'feederbox', 'lidarr'] }
+    - { role: iperf3, tags: ['shitbox', 'mediabox', 'feederbox', 'iperf3'] }
+    - { role: nethogs, tags: ['shitbox', 'mediabox', 'feederbox', 'nethogs'] }
+    - { role: authelia, tags: ['authelia', 'authelia-reset'] }
+    - { role: autoheal, tags: ['autoheal'] }
+    - { role: autoscan, tags: ['autoscan'] }
+    - { role: bazarr, tags: ['bazarr'] }
+    - { role: btrfsmaintenance, tags: ['btrfsmaintenance'] }
+    - { role: cadvisor, tags: ['cadvisor'] }
+    - { role: ddclient, tags: ['ddclient'] }
+    - { role: diun, tags: ['diun'] }
+    - { role: grafana, tags: ['grafana'] }
+    - { role: jellyfin, tags: ['jellyfin'] }
+    - { role: mainline, tags: ['mainline'] }
+    - { role: netdata, tags: ['netdata'] }
+    - { role: node_exporter, tags: ['node_exporter'] }
+    - { role: plex, tags: ['plex', 'plex-reset-codecs'] }
+    - { role: plex_db, tags: ['plex-db'] }
+    - { role: postgres, tags: ['postgres'] }
+    - { role: prometheus, tags: ['prometheus'] }
+    - { role: prowlarr, tags: ['prowlarr'] }
+    - { role: python, tags: ['python'] }
+    - { role: qbittorrent, tags: ['qbittorrent'] }
+    - { role: readarr, tags: ['readarr'] }
+    - { role: redis, tags: ['redis'] }
+    - { role: sabnzbd, tags: ['sabnzbd'] }
+    - { role: subliminal, tags: ['subliminal'] }
+    - { role: traktarr, tags: ['traktarr'] }
+    - { role: transfer, tags: ['transfer'] }
+    - { role: yyq, tags: ['yyq'] }
+    # Apps End
+    - { role: custom, tags: ['custom'] }
+    - { role: hetzner_nfs, tags: ['hetzner_nfs_server', 'hetzner_nfs_server_uninstall', 'hetzner_nfs_client_mount', 'hetzner_nfs_client_unmount'] }
+    - { role: plex_auth_token, tags: ['plex_auth_token'] }
+    - { role: plex_extra_tasks, tags: ['plex-extra-tasks'] }
+    - { role: sub_zero, tags: ['plex-plugins-sub-zero', 'plex-plugins-sub-zero-reinstall'] }
+    - { role: webtools, tags: ['plex-plugins-webtools', 'plex-plugins-webtools-reinstall'] }

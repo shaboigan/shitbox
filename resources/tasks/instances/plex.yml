@@ -1,0 +1,21 @@
+###########################################################################
+# Title:         Shitbox: Resources | Tasks | Instances | Get Plex Info   #
+# Author(s):     salty                                                    #
+# URL:           https://github.com/shaboigan/Shitbox                      #
+# --                                                                      #
+###########################################################################
+#                   GNU General Public License v3.0                       #
+###########################################################################
+---
+- name: Resources | Tasks | Instances | Get Info | Set 'plex_auth_token' default value
+  ansible.builtin.set_fact:
+    plex_auth_token: "not installed"
+
+- name: Resources | Tasks | Instances | Get Info | Import Plex Auth Token role
+  ansible.builtin.include_role:
+    name: plex_auth_token
+  when: plex_account_is_enabled
+
+- name: Resources | Tasks | Instances | Get Info | Set 'plex_info' variable
+  ansible.builtin.set_fact:
+    plex_info: "{{ plex_info | default({}) | combine({plex_name: {'name': plex_name, 'url': plex_web_url, 'token': plex_auth_token}}) }}"

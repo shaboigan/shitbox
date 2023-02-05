@@ -1,0 +1,30 @@
+#########################################################################
+# Title:         Shitbox: Sanity Check | Version Check                  #
+# Author(s):     desimaniac, salty                                      #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+################################
+# Ansible Tags
+################################
+# Source: http://blog.leifmadsen.com/blog/2017/01/04/finding-available-ansible-tags-in-playbooks-and-roles/
+sanity_check_ansible_tags_lookup_command: |
+    ansible-playbook shitbox.yml --list-tags 2>&1 | grep "TASK TAGS" \
+      | cut -d":" -f2 | awk '{sub(/\[/, "")sub(/\]/, "")}1' | sed -e 's/,//g' | xargs -n 1 | sort -u
+
+################################
+# Backup
+################################
+
+sanity_check_backup_lockfile_path: "{{ playbook_dir }}/backup.lock"
+
+################################
+# Logs
+################################
+
+sanity_check_logs_playbook_path: "{{ playbook_dir }}/shitbox.yml"
+
+sanity_check_logs_logfile_path: "{{ playbook_dir }}/shitbox.log"

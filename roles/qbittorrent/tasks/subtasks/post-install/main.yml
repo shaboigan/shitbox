@@ -1,0 +1,38 @@
+#########################################################################
+# Title:         Shitbox: qBittorrent | Post-Install Tasks              #
+# Author(s):     salty                                                  #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: Post-Install | Wait for config to be created
+  ansible.builtin.wait_for:
+    path: "{{ qbittorrent_paths_conf }}"
+    state: present
+
+- name: Post-Install | Wait for 10 seconds
+  ansible.builtin.wait_for:
+    timeout: 10
+
+- name: Post-Install | Stop container
+  community.docker.docker_container:
+    name: "{{ qbittorrent_docker_container }}"
+    container_default_behavior: compatibility
+    tls_hostname: localhost
+    state: stopped
+    comparisons:
+      '*': ignore
+
+- name: Post-Install | Settings Task
+  ansible.builtin.import_tasks: "settings/main.yml"
+
+- name: Post-Install | Start container # noqa args[module]
+  community.docker.docker_container:
+    name: "{{ qbittorrent_docker_container }}"
+    container_default_behavior: compatibility
+    tls_hostname: localhost
+    state: "{{ qbittorrent_docker_state }}"
+    comparisons:
+      '*': ignore

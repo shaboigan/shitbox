@@ -1,0 +1,16 @@
+#########################################################################
+# Title:            Shitbox: Autoscan                                   #
+# Author(s):        Salty, TABLE                                        #
+# URL:              https://github.com/shaboigan/Shitbox                 #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Execute Autoscan roles"
+  ansible.builtin.include_tasks: main2.yml
+  vars:
+    autoscan_name: "{{ role }}"
+  with_items: "{{ autoscan_instances }}"
+  loop_control:
+    loop_var: role

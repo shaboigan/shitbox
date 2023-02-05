@@ -1,0 +1,11 @@
+##########################################################################
+# Title:         Shitbox: Hetzner NFS | Default Variables                #
+# Author(s):     salty                                                   #
+# URL:           https://github.com/shaboigan/Shitbox                     #
+# --                                                                     #
+##########################################################################
+#                   GNU General Public License v3.0                      #
+##########################################################################
+---
+hetzner_nfs_init_overwrite_client: true
+hetzner_nfs_init_overwrite_server: true

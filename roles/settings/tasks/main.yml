@@ -1,0 +1,20 @@
+#########################################################################
+# Title:         Shitbox: Settings Role                                 #
+# Author(s):     desimaniac                                             #
+# URL:           https://github.com/shaboigan/Shitbox                    #
+# --                                                                    #
+#########################################################################
+#                   GNU General Public License v3.0                     #
+#########################################################################
+---
+- name: "Settings | Start"
+  ansible.builtin.include_tasks: "subtasks/start.yml"
+
+- name: "Settings | Main 2"
+  ansible.builtin.include_tasks: "main2.yml"
+  loop: "{{ config_files }}"
+  loop_control:
+    loop_var: outer_item
+
+- name: "Settings | Finish"
+  ansible.builtin.include_tasks: "subtasks/finish.yml"
