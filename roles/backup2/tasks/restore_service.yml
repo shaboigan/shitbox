@@ -101,13 +101,6 @@
     color: bad
     username: ""
     icon_url: ""
-
-  ansible.builtin.include_role:
-    name: notify
-  vars:
-    message: >
-      Shitbox Backup: The following config file(s) were NOT encrypted successfully: '{{ unencrypted_files_list | trim }}'.
-      Restore Service will now be skipped.
   when: (unencrypted_files_list | trim | length > 0)
 
 - name: Restore Service | Print error message when config file(s) were encrypted successfully
