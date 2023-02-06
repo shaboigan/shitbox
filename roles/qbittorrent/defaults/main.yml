@@ -81,11 +81,11 @@ qbittorrent_docker_image: "{{ lookup('vars', qbittorrent_name + '_docker_image_r
                                  + ':' + lookup('vars', qbittorrent_name + '_docker_image_tag', default=qbittorrent_docker_image_tag) }}"
 
 # Ports
-qbittorrent_docker_ports: "27633"
+qbittorrent_docker_port: "27633"
 qbittorrent_web_port_lookup: "{{ lookup('vars', qbittorrent_name + '_web_port', default=qbittorrent_web_port) }}"
 
 qbittorrent_docker_ports_defaults:
-  - "{{ qbittorrent_docker_ports }}:{{ qbittorrent_docker_ports }}"
+  - "{{ qbittorrent_docker_port }}:{{ qbittorrent_docker_port }}"
 qbittorrent_docker_ports_custom: []
 qbittorrent_docker_ports: "{{ lookup('vars', qbittorrent_name + '_docker_ports_defaults', default=qbittorrent_docker_ports_defaults)
                                  + lookup('vars', qbittorrent_name + '_docker_ports_custom', default=qbittorrent_docker_ports_custom) }}"

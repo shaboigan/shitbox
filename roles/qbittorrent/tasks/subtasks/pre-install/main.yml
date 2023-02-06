@@ -23,7 +23,7 @@
     path: "{{ qbittorrent_paths_conf }}"
     section: BitTorrent
     option: Session\Port
-    value: "{{ qbittorrent_docker_ports }}"
+    value: "{{ qbittorrent_docker_port }}"
     no_extra_spaces: true
     state: present
     owner: "{{ user.name }}"
