@@ -76,7 +76,7 @@ qbittorrent_docker_container: "{{ qbittorrent_name }}"
 # Image
 qbittorrent_docker_image_pull: true
 qbittorrent_docker_image_repo: "binhex/arch-qbittorrent"
-qbittorrent_docker_image_tag: "latest"
+qbittorrent_docker_image_tag: "4.3.0-1-02"
 qbittorrent_docker_image: "{{ lookup('vars', qbittorrent_name + '_docker_image_repo', default=qbittorrent_docker_image_repo)
                                  + ':' + lookup('vars', qbittorrent_name + '_docker_image_tag', default=qbittorrent_docker_image_tag) }}"
 
