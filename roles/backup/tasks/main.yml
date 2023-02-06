@@ -35,11 +35,15 @@
     - name: Snapshot
       ansible.builtin.import_tasks: "snapshot.yml"
 
-    - name: "Notify | Shitbox Backup: Started Shitbox backup task"
-      ansible.builtin.include_role:
-        name: notify
-      vars:
-        message: "Shitbox Backup: Started {{ use_snapshot | ternary('(snapshot-enabled) ', '') }}backup task."
+    - name: "Slack | Shitbox Backup: Started Shitbox backup task"
+      slack:
+        token: "{{ slack.token }}"
+        msg: "Shitbox Backup: Started {{ use_snapshot | ternary('(snapshot-enabled) ', '') }}backup task."
+        channel: "#servers"
+        color: good
+        username: ""
+        icon_url: ""
+
 
     - name: "Create 'backup.lock'."
       ansible.builtin.file:
@@ -121,11 +125,14 @@
       ansible.builtin.set_fact:
         backup_enough_disk_space: "{{ (local_backup_destination_free_space.stdout | int) > (backup_estimated_size | int) }}"
 
-    - name: "Notify | Shitbox Backup: Started Shitbox backup task"
-      ansible.builtin.include_role:
-        name: notify
-      vars:
-        message: "Shitbox Backup: Not enough disk space. Aborting."
+    - name: "Slack | Shitbox Backup: Started Shitbox backup task"
+      slack:
+        token: "{{ slack.token }}"
+        msg: "Shitbox Backup: Not enough disk space. Aborting."
+        channel: "#servers"
+        color: bad
+        username: ""
+        icon_url: ""
       when: (not backup_enough_disk_space)
 
     - name: "Fail when not enough disk space"
@@ -257,11 +264,14 @@
           ansible.builtin.shell: "docker stop {{ docker_containers }}"
           ignore_errors: true
 
-        - name: "Notify | Shitbox Backup: Stopped Docker containers"
-          ansible.builtin.include_role:
-            name: notify
-          vars:
-            message: "Shitbox Backup: Stopped Docker containers."
+        - name: "Slack | Shitbox Backup: Stopped Docker containers"
+          slack:
+            token: "{{ slack.token }}"
+            msg: "Shitbox Backup: Stopped Docker containers."
+            channel: "#servers"
+            color: warning
+            username: ""
+            icon_url: ""
 
       when: (docker_containers | trim | length > 0)
 
@@ -344,11 +354,14 @@
           ignore_errors: true
           when: (docker_containers | trim | length > 0)
 
-        - name: "Snapshot | Notify | Shitbox Backup: Started Docker containers"
-          ansible.builtin.include_role:
-            name: notify
-          vars:
-            message: "Shitbox Backup: Started Docker containers."
+        - name: "Snapshot | Slack | Shitbox Backup: Started Docker containers"
+          slack:
+            token: "{{ slack.token }}"
+            msg: "Shitbox Backup: Started Docker containers."
+            channel: "#servers"
+            color: good
+            username: ""
+            icon_url: ""
           when: (docker_containers | trim | length > 0)
 
       when: use_snapshot
@@ -443,11 +456,14 @@
       ansible.builtin.set_fact:
         backup_size: "{{ (backup_new.stdout | int) | filesizeformat }}"
 
-    - name: "Notify | Shitbox Backup: Backup created with total size of {{ backup_size }}."
-      ansible.builtin.include_role:
-        name: notify
-      vars:
-        message: "Shitbox Backup: Backup created with total size of {{ backup_size }}."
+    - name: "Slack | Shitbox Backup: Backup created with total size of {{ backup_size }}."
+      slack:
+        token: "{{ slack.token }}"
+        msg: "Shitbox Backup: Backup created with total size of {{ backup_size }}."
+        channel: "#servers"
+        color: good
+        username: ""
+        icon_url: ""
       ignore_errors: true
 
     # Start Docker containers when snapshot is not enabled
@@ -464,11 +480,14 @@
           ignore_errors: true
           when: (docker_containers | trim | length > 0)
 
-        - name: "Notify | Shitbox Backup: Started Docker containers"
-          ansible.builtin.include_role:
-            name: notify
-          vars:
-            message: "Shitbox Backup: Started Docker containers."
+        - name: "Slack | Shitbox Backup: Started Docker containers"
+          slack:
+            token: "{{ slack.token }}"
+            msg: "Shitbox Backup: Started Docker containers."
+            channel: "#servers"
+            color: good
+            username: ""
+            icon_url: ""
           when: (docker_containers | trim | length > 0)
 
       when: (not use_snapshot)
@@ -549,30 +568,15 @@
       become_user: "{{ user.name }}"
       when: backup.rclone.enable
 
-    - name: "Notify | Shitbox Backup: Rclone uploaded backup to '{{ backup.rclone.destination }}'"
-      ansible.builtin.include_role:
-        name: notify
-      vars:
-        message: "Shitbox Backup: Rclone uploaded backup to '{{ backup.rclone.destination }}'."
+    - name: "Slack | Shitbox Backup: Rclone uploaded backup to '{{ backup.rclone.destination }}'"
+      slack:
+        token: "{{ slack.token }}"
+        msg: "Shitbox Backup: Rclone uploaded backup to '{{ backup.rclone.destination }}'."
+        channel: "#servers"
+        color: good
+        username: ""
+        icon_url: ""
       when: backup.rclone.enable
-
-    - name: "Use rsync to upload backup to '{{ backup.rsync.destination }}'"
-      ansible.posix.synchronize:
-        src: "{{ backup.local.destination }}/"
-        dest: "{{ backup.rsync.destination }}/"
-        set_remote_user: true
-        compress: false
-        dest_port: "{{ backup.rsync.port }}"
-      become: true
-      become_user: "{{ user.name }}"
-      when: backup.rsync.enable
-
-    - name: "Notify | Shitbox Backup: Rsync uploaded backup to '{{ backup.rsync.destination }}'"
-      ansible.builtin.include_role:
-        name: notify
-      vars:
-        message: "Shitbox Backup: Rsync uploaded backup to '{{ backup.rsync.destination }}'."
-      when: backup.rsync.enable
 
     - name: Get Current Time
       ansible.builtin.shell: "date \"+%s\""
@@ -586,11 +590,14 @@
       ansible.builtin.set_fact:
         total_time: "{{ (((end_time | int) - (start_time | int)) / 60) | int | abs }}"
 
-    - name: "Notify | Shitbox Backup: Finished Shitbox backup task in {{ total_time }} minutes"
-      ansible.builtin.include_role:
-        name: notify
-      vars:
-        message: "Shitbox Backup: Finished Shitbox {{ use_snapshot | ternary('(snapshot-enabled) ', '') }}backup task in {{ total_time }} minutes."
+    - name: "Slack | Shitbox Backup: Finished Shitbox backup task in {{ total_time }} minutes"
+      slack:
+        token: "{{ slack.token }}"
+        msg: "Shitbox Backup: Finished Shitbox {{ use_snapshot | ternary('(snapshot-enabled) ', '') }}backup task in {{ total_time }} minutes."
+        channel: "#servers"
+        color: good
+        username: ""
+        icon_url: ""
 
     - name: "Start 'cloudplow' service"
       ansible.builtin.systemd:
@@ -664,11 +671,14 @@
       ansible.builtin.debug:
         msg: 'Backup terminated due to an error'
 
-    - name: "Notify | Shitbox Backup: Backup terminated due to an error"
-      ansible.builtin.include_role:
-        name: notify
-      vars:
-        message: "Shitbox Backup: Backup terminated due to an error."
+    - name: "Slack | Shitbox Backup: Backup terminated due to an error"
+      slack:
+        token: "{{ slack.token }}"
+        msg: "Shitbox Backup: Backup terminated due to an error."
+        channel: "#servers"
+        color: bad
+        username: ""
+        icon_url: ""
 
   always:
     - name: "Remove 'backup.lock'"

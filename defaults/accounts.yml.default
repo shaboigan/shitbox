@@ -12,7 +12,10 @@ plex:
   user:
   pass:
   tfa: no
-dockerhub:
-  user:
+slack:
+  token:
+trakt:
+  id:
+  secret:
   token:
 apprise:

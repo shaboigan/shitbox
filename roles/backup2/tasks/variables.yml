@@ -12,14 +12,12 @@
   ansible.builtin.set_fact:
     local_tmp: { destination: "{{ (backup.local.destination | default('', true)) | regex_replace('\\/$', '') }}" }
     rclone_tmp: { destination: "{{ (backup.rclone.destination | default('', true)) | regex_replace('\\/$', '') }}" }
-    rsync_tmp: { destination: "{{ (backup.rsync.destination | default('', true)) | regex_replace('\\/$', '') }}" }
 
 - name: Merge changes back
   ansible.builtin.set_fact:
     backup:
       local: "{{ backup.local | combine(local_tmp) }}"
       rclone: "{{ backup.rclone | combine(rclone_tmp) }}"
-      rsync: "{{ backup.rsync | combine(rsync_tmp) }}"
       cron:
         cron_time: "{{ backup.cron.cron_time }}"
         enable: "{{ backup.cron.enable }}"
