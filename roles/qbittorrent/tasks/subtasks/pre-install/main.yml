@@ -11,7 +11,7 @@
 
 - name: Pre-Install | Check if opvn config file exists
   stat:
-    path: {{ qbittorrent_paths_location }}/openvpn/config.ovpn"
+    path: "{{ qbittorrent_paths_location }}/openvpn/config.ovpn"
   register: config_ovpn
 
 - name: Pre-Install | Import 'openvpn config'
