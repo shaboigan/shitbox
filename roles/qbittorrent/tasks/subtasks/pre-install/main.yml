@@ -30,3 +30,15 @@
     group: "{{ user.name }}"
     mode: "0775"
   when: qbittorrent_paths_conf_stat.stat.exists
+
+- name: Pre-Install | Settings | Update Web Port in 'qbittorrent.conf' config settings
+  community.general.ini_file:
+    path: "{{ qbittorrent_paths_conf }}"
+    section: Preferences
+    option: WebUI\Port
+    value: "{{ qbittorrent_web_port }}"
+    no_extra_spaces: true
+    state: present
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"
+    mode: "0775"

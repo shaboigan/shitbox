@@ -22,7 +22,7 @@
 - name: Post-Install | Settings | Update Web Port in 'qbittorrent.conf' config settings
   community.general.ini_file:
     path: "{{ qbittorrent_paths_conf }}"
-    section: BitTorrent
+    section: Preferences
     option: WebUI\Port
     value: "{{ qbittorrent_web_port }}"
     no_extra_spaces: true
