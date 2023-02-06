@@ -1,5 +1,5 @@
 #########################################################################
-# Title:         Shitbox: Deluge Role                                   #
+# Title:         Shitbox: qbittorrent Role                           #
 # Author(s):     salty                                                  #
 # URL:           https://github.com/shaboigan/Shitbox                    #
 # --                                                                    #
@@ -7,7 +7,7 @@
 #                   GNU General Public License v3.0                     #
 #########################################################################
 ---
-- name: "Execute qBittorrent roles"
+- name: "Execute qBittorrent VPN roles"
   ansible.builtin.include_tasks: main2.yml
   vars:
     qbittorrent_name: "{{ role }}"

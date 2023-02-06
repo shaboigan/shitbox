@@ -1,5 +1,5 @@
 ####################################################################################
-# Title:         Shitbox: qBittorrent | Post-Install | Settings                    #
+# Title:         Shitbox: qbittorrent | Post-Install | Settings                 #
 # Author(s):     salty                                                             #
 # URL:           https://github.com/shaboigan/Shitbox                               #
 # --                                                                               #
@@ -7,7 +7,7 @@
 #                   GNU General Public License v3.0                                #
 ####################################################################################
 ---
-- name: Post-Install | Settings | Update Port in 'qBittorrent.conf' config settings
+- name: Post-Install | Settings | Update Port in 'qbittorrent.conf' config settings
   community.general.ini_file:
     path: "{{ qbittorrent_paths_conf }}"
     section: BitTorrent
@@ -19,7 +19,7 @@
     group: "{{ user.name }}"
     mode: "0775"
 
-- name: Post-Install | Settings | Update HostHeaderValidation 'qBittorrent.conf' config settings
+- name: Post-Install | Settings | Update HostHeaderValidation 'qbittorrent.conf' config settings
   community.general.ini_file:
     path: "{{ qbittorrent_paths_conf }}"
     section: Preferences
@@ -31,7 +31,7 @@
     group: "{{ user.name }}"
     mode: "0775"
 
-- name: Post-Install | Settings | Update CSRFProtection 'qBittorrent.conf' config settings
+- name: Post-Install | Settings | Update CSRFProtection 'qbittorrent.conf' config settings
   community.general.ini_file:
     path: "{{ qbittorrent_paths_conf }}"
     section: Preferences

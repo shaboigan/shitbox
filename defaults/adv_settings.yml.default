@@ -29,8 +29,6 @@ gpu:
   intel: yes
   nvidia: no
 vpn:
-  enable: no
-  port: 
   config: 
 overseerr:
   subdomain: 

@@ -1,5 +1,5 @@
 #########################################################################
-# Title:            Shitbox: qBittorrent                                #
+# Title:            Shitbox: qbittorrent                             #
 # Author(s):        salty                                               #
 # URL:              https://github.com/shaboigan/Shitbox                 #
 #########################################################################
@@ -19,10 +19,10 @@ qbittorrent_instances: ["qbittorrent"]
 qbittorrent_paths_folder: "{{ qbittorrent_name }}"
 qbittorrent_paths_location: "{{ server_appdata_path }}/{{ qbittorrent_paths_folder }}"
 qbittorrent_paths_downloads_location: "{{ downloads_torrents_path }}/{{ qbittorrent_paths_folder }}"
-qbittorrent_paths_conf: "{{ qbittorrent_paths_location }}/qBittorrent/qBittorrent.conf"
+qbittorrent_paths_conf: "{{ qbittorrent_paths_location }}/qBittorrent/config/qBittorrent.conf"
 qbittorrent_paths_folders_list:
   - "{{ qbittorrent_paths_location }}"
-  - "{{ qbittorrent_paths_location }}/openvpn"  
+  - "{{ qbittorrent_paths_location }}/openvpn"
   - "{{ qbittorrent_paths_downloads_location }}"
   - "{{ qbittorrent_paths_downloads_location }}/completed"
   - "{{ qbittorrent_paths_downloads_location }}/incoming"
@@ -37,7 +37,7 @@ qbittorrent_web_subdomain: "{{ qbittorrent_name }}"
 qbittorrent_web_domain: "{{ user.domain }}"
 qbittorrent_web_port: "8090"
 qbittorrent_web_url: "{{ 'https://' + lookup('vars', qbittorrent_name + '_web_subdomain', default=qbittorrent_web_subdomain)
-                         + '.' + lookup('vars', qbittorrent_name + '_web_domain', default=qbittorrent_web_domain) }}"
+                            + '.' + lookup('vars', qbittorrent_name + '_web_domain', default=qbittorrent_web_domain) }}"
 
 ################################
 # DNS
@@ -52,33 +52,19 @@ qbittorrent_dns_proxy: "{{ dns.proxied }}"
 ################################
 
 qbittorrent_traefik_sso_middleware: "{{ traefik_default_sso_middleware }}"
-qbittorrent_traefik_themepark_middleware: "{{ ',themepark-' + lookup('vars', qbittorrent_name + '_name', default=qbittorrent_name)
-                                           if (qbittorrent_themepark_enabled and global_themepark_plugin_enabled)
-                                           else '' }}"
-
 qbittorrent_traefik_middleware_default: "{{ traefik_default_middleware + ',' + qbittorrent_traefik_sso_middleware
-                                         if (qbittorrent_traefik_sso_middleware | length > 0)
-                                         else traefik_default_middleware }}"
+                                            if (qbittorrent_traefik_sso_middleware | length > 0)
+                                            else traefik_default_middleware }}"
 qbittorrent_traefik_middleware_custom: ""
 qbittorrent_traefik_middleware: "{{ qbittorrent_traefik_middleware_default + ','
-                                    + qbittorrent_traefik_middleware_custom
-                                    + qbittorrent_traefik_themepark_middleware
-                                 if (not qbittorrent_traefik_middleware_custom.startswith(',') and qbittorrent_traefik_middleware_custom | length > 0)
-                                 else qbittorrent_traefik_middleware_default
-                                    + qbittorrent_traefik_middleware_custom
-                                    + qbittorrent_traefik_themepark_middleware }}"
+                                       + qbittorrent_traefik_middleware_custom
+                                    if (not qbittorrent_traefik_middleware_custom.startswith(',') and qbittorrent_traefik_middleware_custom | length > 0)
+                                    else qbittorrent_traefik_middleware_default
+                                       + qbittorrent_traefik_middleware_custom }}"
 qbittorrent_traefik_certresolver: "{{ traefik_default_certresolver }}"
 qbittorrent_traefik_enabled: true
 qbittorrent_traefik_api_enabled: true
 qbittorrent_traefik_api_endpoint: "`/api`,`/command`,`/query`,`/login`,`/sync`"
-
-################################
-# THEME
-################################
-
-# Options can be found at https://github.com/gilbN/theme.park
-qbittorrent_themepark_enabled: false
-qbittorrent_themepark_theme: "{{ global_themepark_theme }}"
 
 ################################
 # Docker
@@ -89,13 +75,13 @@ qbittorrent_docker_container: "{{ qbittorrent_name }}"
 
 # Image
 qbittorrent_docker_image_pull: true
-qbittorrent_docker_image_repo: "binhex/arch-qbittorrentvpn"
-qbittorrent_docker_image_tag: "4.3.0-1-02"
+qbittorrent_docker_image_repo: "binhex/arch-qbittorrent"
+qbittorrent_docker_image_tag: "latest"
 qbittorrent_docker_image: "{{ lookup('vars', qbittorrent_name + '_docker_image_repo', default=qbittorrent_docker_image_repo)
-                              + ':' + lookup('vars', qbittorrent_name + '_docker_image_tag', default=qbittorrent_docker_image_tag) }}"
+                                 + ':' + lookup('vars', qbittorrent_name + '_docker_image_tag', default=qbittorrent_docker_image_tag) }}"
 
 # Ports
-qbittorrent_docker_ports: "{{ vpn.port }}"
+qbittorrent_docker_ports: "27633"
 qbittorrent_web_port_lookup: "{{ lookup('vars', qbittorrent_name + '_web_port', default=qbittorrent_web_port) }}"
 
 qbittorrent_docker_ports_defaults:
@@ -103,7 +89,16 @@ qbittorrent_docker_ports_defaults:
   - "{{ qbittorrent_docker_ports }}:{{ qbittorrent_docker_ports }}/udp"
 qbittorrent_docker_ports_custom: []
 qbittorrent_docker_ports: "{{ lookup('vars', qbittorrent_name + '_docker_ports_defaults', default=qbittorrent_docker_ports_defaults)
-                              + lookup('vars', qbittorrent_name + '_docker_ports_custom', default=qbittorrent_docker_ports_custom) }}"
+                                 + lookup('vars', qbittorrent_name + '_docker_ports_custom', default=qbittorrent_docker_ports_custom) }}"
+
+################################
+# Settings
+################################
+
+qbittorrent_log_level_daemon: info
+qbittorrent_log_level_web: info
+qbittorrent_name_servers: "84.200.69.80,1.1.1.1,84.200.70.40,1.0.0.1"
+qbittorrent_lan_network: "172.19.0.0/16"
 
 # Envs
 qbittorrent_docker_envs_default:
@@ -111,21 +106,22 @@ qbittorrent_docker_envs_default:
   PGID: "{{ gid }}"
   TZ: "{{ tz }}"
   UMASK_SET: "002"
-  VPN_ENABLED: "{{ vpn.enable }}"
+  VPN_ENABLED: "yes"
   VPN_PROV: "airvpn"
+  STRICT_PORT_FORWARD: "yes"
   ENABLE_PRIVOXY: "no"
-  LAN_NETWORK: "172.19.0.0/16"
-  NAME_SERVERS: "209.222.18.222,84.200.69.80,37.235.1.174,1.1.1.1,209.222.18.218,37.235.1.177,84.200.70.40,1.0.0.1"
-  ADDITIONAL_PORTS: "{{ vpn.port }}:{{ vpn.port }}"
+  LAN_NETWORK: "{{ qbittorrent_lan_network }}"
+  NAME_SERVERS: "{{ qbittorrent_name_servers }}"
+
 qbittorrent_docker_envs_custom: {}
 qbittorrent_docker_envs: "{{ lookup('vars', qbittorrent_name + '_docker_envs_default', default=qbittorrent_docker_envs_default)
-                             | combine(lookup('vars', qbittorrent_name + '_docker_envs_custom', default=qbittorrent_docker_envs_custom)) }}"
+                                | combine(lookup('vars', qbittorrent_name + '_docker_envs_custom', default=qbittorrent_docker_envs_custom)) }}"
 
 # Commands
 qbittorrent_docker_commands_default: []
 qbittorrent_docker_commands_custom: []
 qbittorrent_docker_commands: "{{ lookup('vars', qbittorrent_name + '_docker_commands_default', default=qbittorrent_docker_commands_default)
-                                 + lookup('vars', qbittorrent_name + '_docker_docker_commands_custom', default=qbittorrent_docker_commands_custom) }}"
+                                    + lookup('vars', qbittorrent_name + '_docker_docker_commands_custom', default=qbittorrent_docker_commands_custom) }}"
 
 # Volumes
 qbittorrent_docker_volumes_default:
@@ -133,33 +129,27 @@ qbittorrent_docker_volumes_default:
   - "{{ server_appdata_path }}/scripts:/scripts"
 qbittorrent_docker_volumes_custom: []
 qbittorrent_docker_volumes: "{{ lookup('vars', qbittorrent_name + '_docker_volumes_default', default=qbittorrent_docker_volumes_default)
-                                + lookup('vars', qbittorrent_name + '_docker_volumes_custom', default=qbittorrent_docker_volumes_custom) }}"
+                                   + lookup('vars', qbittorrent_name + '_docker_volumes_custom', default=qbittorrent_docker_volumes_custom) }}"
 
 # Devices
 qbittorrent_docker_devices_default: []
 qbittorrent_docker_devices_custom: []
 qbittorrent_docker_devices: "{{ lookup('vars', qbittorrent_name + '_docker_devices_default', default=qbittorrent_docker_devices_default)
-                                + lookup('vars', qbittorrent_name + '_docker_devices_custom', default=qbittorrent_docker_devices_custom) }}"
+                                   + lookup('vars', qbittorrent_name + '_docker_devices_custom', default=qbittorrent_docker_devices_custom) }}"
 
 # Hosts
 qbittorrent_docker_hosts_default: []
 qbittorrent_docker_hosts_custom: []
 qbittorrent_docker_hosts: "{{ docker_hosts_common
-                              | combine(lookup('vars', qbittorrent_name + '_docker_hosts_default', default=qbittorrent_docker_hosts_default))
-                              | combine(lookup('vars', qbittorrent_name + '_docker_hosts_custom', default=qbittorrent_docker_hosts_custom)) }}"
+                                 | combine(lookup('vars', qbittorrent_name + '_docker_hosts_default', default=qbittorrent_docker_hosts_default))
+                                 | combine(lookup('vars', qbittorrent_name + '_docker_hosts_custom', default=qbittorrent_docker_hosts_custom)) }}"
 
 # Labels
 qbittorrent_docker_labels_default: {}
 qbittorrent_docker_labels_custom: {}
-qbittorrent_docker_labels_themepark:
-  - '{ "traefik.http.middlewares.themepark-{{ lookup("vars", qbittorrent_name + "_name", default=qbittorrent_name) }}.plugin.themepark.app": "qbittorrent" }'
-  - '{ "traefik.http.middlewares.themepark-{{ lookup("vars", qbittorrent_name + "_name", default=qbittorrent_name) }}.plugin.themepark.theme": "{{ lookup("vars", qbittorrent_name + "_themepark_theme", default=qbittorrent_themepark_theme) }}" }'
 qbittorrent_docker_labels: "{{ docker_labels_common
-                               | combine(lookup('vars', qbittorrent_name + '_docker_labels_default', default=qbittorrent_docker_labels_default))
-                               | combine((lookup('vars', qbittorrent_name + '_docker_labels_themepark', default=qbittorrent_docker_labels_themepark)
-                            if (qbittorrent_themepark_enabled and global_themepark_plugin_enabled)
-                            else {}),
-                            lookup('vars', qbittorrent_name + '_docker_labels_custom', default=qbittorrent_docker_labels_custom)) }}"
+                                  | combine(lookup('vars', qbittorrent_name + '_docker_labels_default', default=qbittorrent_docker_labels_default))
+                                  | combine(lookup('vars', qbittorrent_name + '_docker_labels_custom', default=qbittorrent_docker_labels_custom)) }}"
 
 # Hostname
 qbittorrent_docker_hostname: "{{ qbittorrent_name }}"
@@ -169,20 +159,24 @@ qbittorrent_docker_networks_alias: "{{ qbittorrent_name }}"
 qbittorrent_docker_networks_default: []
 qbittorrent_docker_networks_custom: []
 qbittorrent_docker_networks: "{{ docker_networks_common
-                                 + lookup('vars', qbittorrent_name + '_docker_networks_default', default=qbittorrent_docker_networks_default)
-                                 + lookup('vars', qbittorrent_name + '_docker_networks_custom', default=qbittorrent_docker_networks_custom) }}"
+                                    + lookup('vars', qbittorrent_name + '_docker_networks_default', default=qbittorrent_docker_networks_default)
+                                    + lookup('vars', qbittorrent_name + '_docker_networks_custom', default=qbittorrent_docker_networks_custom) }}"
 
 # Capabilities
-qbittorrent_docker_capabilities_default: []
+qbittorrent_docker_capabilities_default:
+  - NET_ADMIN
 qbittorrent_docker_capabilities_custom: []
-qbittorrent_docker_capabilities: "{{ lookup('vars', qbittorrent_name + '_docker_capabilities_default', default=qbittorrent_docker_capabilities_default)
-                                     + lookup('vars', qbittorrent_name + '_docker_capabilities_custom', default=qbittorrent_docker_capabilities_custom) }}"
+qbittorrent_docker_capabilities: "{{ qbittorrent_docker_capabilities_default
+                                        + qbittorrent_docker_capabilities_custom }}"
 
 # Security Opts
 qbittorrent_docker_security_opts_default: []
 qbittorrent_docker_security_opts_custom: []
 qbittorrent_docker_security_opts: "{{ lookup('vars', qbittorrent_name + '_docker_security_opts_default', default=qbittorrent_docker_security_opts_default)
-                                      + lookup('vars', qbittorrent_name + '_docker_security_opts_custom', default=qbittorrent_docker_security_opts_custom) }}"
+                                         + lookup('vars', qbittorrent_name + '_docker_security_opts_custom', default=qbittorrent_docker_security_opts_custom) }}"
+# Sysctls
+qbittorrent_docker_sysctls:
+  net.ipv4.conf.all.src_valid_mark: "1"
 
 # Restart Policy
 qbittorrent_docker_restart_policy: unless-stopped
@@ -192,3 +186,6 @@ qbittorrent_docker_stop_timeout: 900
 
 # State
 qbittorrent_docker_state: started
+
+# Privileged
+qbittorrent_docker_privileged: "yes"
