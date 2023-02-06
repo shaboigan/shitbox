@@ -7,8 +7,6 @@
 #                   GNU General Public License v3.0                     #
 #########################################################################
 ---
-- name: Pre-Install | VPN Tasks
-
 - name: Pre-Install | Check if opvn config file exists
   stat:
     path: "{{ qbittorrent_paths_location }}/openvpn/config.ovpn"
