@@ -86,7 +86,6 @@ qbittorrent_web_port_lookup: "{{ lookup('vars', qbittorrent_name + '_web_port', 
 
 qbittorrent_docker_ports_defaults:
   - "{{ qbittorrent_docker_ports }}:{{ qbittorrent_docker_ports }}"
-  - "{{ qbittorrent_docker_ports }}:{{ qbittorrent_docker_ports }}/udp"
 qbittorrent_docker_ports_custom: []
 qbittorrent_docker_ports: "{{ lookup('vars', qbittorrent_name + '_docker_ports_defaults', default=qbittorrent_docker_ports_defaults)
                                  + lookup('vars', qbittorrent_name + '_docker_ports_custom', default=qbittorrent_docker_ports_custom) }}"
