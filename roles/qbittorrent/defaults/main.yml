@@ -35,7 +35,7 @@ qbittorrent_paths_folders_list:
 
 qbittorrent_web_subdomain: "{{ qbittorrent_name }}"
 qbittorrent_web_domain: "{{ user.domain }}"
-qbittorrent_web_port: "8090"
+qbittorrent_web_port: "8080"
 qbittorrent_web_url: "{{ 'https://' + lookup('vars', qbittorrent_name + '_web_subdomain', default=qbittorrent_web_subdomain)
                             + '.' + lookup('vars', qbittorrent_name + '_web_domain', default=qbittorrent_web_domain) }}"
 
@@ -65,6 +65,15 @@ qbittorrent_traefik_certresolver: "{{ traefik_default_certresolver }}"
 qbittorrent_traefik_enabled: true
 qbittorrent_traefik_api_enabled: true
 qbittorrent_traefik_api_endpoint: "`/api`,`/command`,`/query`,`/login`,`/sync`"
+
+################################
+# THEME
+################################
+
+# Options can be found at https://github.com/gilbN/theme.park
+qbittorrent_themepark_enabled: false
+qbittorrent_themepark_theme: "{{ global_themepark_theme }}"
+qbittorrent_themepark_domain: "{{ global_themepark_domain }}"
 
 ################################
 # Docker
