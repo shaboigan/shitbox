@@ -75,7 +75,7 @@ sonarr_api_key:
 ################################
 
 # Options can be found at https://github.com/gilbN/theme.park
-sonarr_themepark_enabled: false
+sonarr_themepark_enabled: true
 sonarr_themepark_theme: "{{ global_themepark_theme }}"
 sonarr_themepark_domain: "{{ global_themepark_domain }}"
 
