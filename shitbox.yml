@@ -43,7 +43,6 @@
     - { role: authelia, tags: ['authelia', 'authelia-reset'] }
     - { role: autoheal, tags: ['autoheal'] }
     - { role: autoscan, tags: ['autoscan'] }
-    - { role: plex_autoscan, tags: ['plex_autoscan'] }
     - { role: bazarr, tags: ['bazarr'] }
     - { role: btrfsmaintenance, tags: ['btrfsmaintenance'] }
     - { role: cadvisor, tags: ['cadvisor'] }
