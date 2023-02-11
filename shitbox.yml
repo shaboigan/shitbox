@@ -65,7 +65,6 @@
     - { role: sabnzbd, tags: ['sabnzbd'] }
     - { role: subliminal, tags: ['subliminal'] }
     - { role: traktarr, tags: ['traktarr'] }
-    - { role: transfer, tags: ['transfer'] }
     - { role: yyq, tags: ['yyq'] }
     # Apps End
     - { role: custom, tags: ['custom'] }
